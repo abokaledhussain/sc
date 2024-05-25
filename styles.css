@@ -1,0 +1,68 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f2f2f2;
+    direction: rtl;
+    text-align: center;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+.author-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.author {
+    font-weight: bold;
+    margin: 0 10px;
+}
+
+.logo {
+    max-width: 50px; /* تعديل حجم الشعار */
+}
+
+.converter {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+input[type="number"], input[type="text"], select, button {
+    margin-bottom: 10px;
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    text-align: right;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+p#result {
+    font-weight: bold;
+}

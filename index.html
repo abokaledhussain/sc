@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محول العملات</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>محول العملات</h1>
+        <div class="author-container">
+            <p class="author">برمجة حسين العرياني</p>
+            <img src="SC.png" alt="شعار" class="logo">
+        </div>
+        <div class="converter">
+            <input type="number" id="amount" placeholder="أدخل المبلغ">
+            <input type="text" id="searchFrom" placeholder="ابحث عن العملة (من)">
+            <select id="fromCurrency">
+                <!-- العملات ستتم إضافتها هنا من خلال السكربت -->
+            </select>
+            <input type="text" id="searchTo" placeholder="ابحث عن العملة (إلى)">
+            <select id="toCurrency">
+                <!-- العملات ستتم إضافتها هنا من خلال السكربت -->
+            </select>
+            <button onclick="convertCurrency()">تحويل</button>
+            <p id="result"></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
