@@ -474,7 +474,7 @@ document.getElementById('excelInput').addEventListener('change', async (e)=>{
     const ws=wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws,{header:1,raw:false});
     const out=[]; for(let i=1;i<rows.length;i++){const r=rows[i]; if(!r||r.length===0) continue; const o=normalizeHeadersRow(r); if(!o.name) continue; out.push({uid:uid(),...o});}
-    if(!out.length){alert('تعذر قراءة البيانات. تأكد من ترتيب الأعمدة: اسم | الجوال | رقم الهوية | الصف | الفصل');return}
+    if(!out.length){alert('تعذر قراءة البيانات. تأكد من ترتيب الأعمدة:  اسم الطالب | الجوال | رقم الهوية | الصف | الفصل');return}
     students = out.concat(students); saveLS();
   };
   reader.readAsArrayBuffer(file);
