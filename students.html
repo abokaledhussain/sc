@@ -410,7 +410,7 @@ function summarize(uid){const recs=loadRecords()[uid]||[];let absent=0,delayMin=
 
 /* ===== تخزين الطلاب ===== */
 function saveLS(){localStorage.setItem(LS_KEY,JSON.stringify(students));refreshFiltersOptions();render()}
-function loadLS(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'[]');students=Array.isArray(v)?v:[]}catch{students=[]]}
+function loadLS(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'[]');students=Array.isArray(v)?v:[]}catch{students=[]}}
 
 /* ===== فلاتر ===== */
 function refreshFiltersOptions(){const gradeSel=$('#gradeFilter');if(!gradeSel)return;const grades=[...new Set(students.map(s=>(s.grade||'').trim()).filter(Boolean))].sort(localeSort);const prev=gradeFilter;gradeSel.innerHTML=`<option value="">كل الصفوف</option>`+grades.map(g=>`<option ${g===prev?'selected':''} value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');applyClassOptions();gradeFilter=$('#gradeFilter').value||'';classFilter=$('#classFilter').value||''}
@@ -462,13 +462,7 @@ function deleteByUid(u){const i=students.findIndex(x=>x.uid===u);if(i>-1){studen
 
 /* ===== Excel: قراءة وفق ترتيبك (اسم/جوال/هوية/صف/فصل) ===== */
 function normalizeHeadersRow(row){
-  return { 
-    name:String(row[0]??'').trim(),    // العمود الأول (فهرس 0): الاسم
-    phone:String(row[1]??'').trim(),   // العمود الثاني (فهرس 1): الجوال
-    id:String(row[2]??'').trim(),      // العمود الثالث (فهرس 2): رقم الهوية
-    grade:String(row[3]??'').trim(),   // العمود الرابع (فهرس 3): الصف
-    class:String(row[4]??'').trim()    // العمود الخامس (فهرس 4): الفصل
-  };
+  return { name:String(row[0]??'').trim(), phone:String(row[1]??'').trim(), id:String(row[2]??'').trim(), grade:String(row[3]??'').trim(), class:String(row[4]??'').trim() };
 }
 document.getElementById('excelInput').addEventListener('change', async (e)=>{
   const file=e.target.files?.[0]; e.target.value='';
@@ -546,7 +540,7 @@ document.getElementById('bulkWhatsAppBtn').addEventListener('click',()=>{
   });
 });
 document.getElementById('startAutoBtn').addEventListener('click',()=>{
-  const sel=getSelected();if(!sel.length){alert('اختر طلابًا أولًا.');return}
+  const sel=getSelected();if(!sel.length){alert('اختر طلابًا أولاً.');return}
   const tSel=$('#templateSelect').value;
   autoQueue=sel.map(s=>({url:waLink(s.phone,buildTemplate(tSel,s.name||'')),name:s.name||s.phone,uid:s.uid,type:(tSel==='delay'?'delay':(tSel==='absent'?'absent':'notice'))}));
   autoIndex=0;startAutoSending()
