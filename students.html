@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>📘 كشوفات الطلاب - ثانوية الأمير عبدالمجيد الأولى (Pro)</title>
+
+<!-- خط + مكتبة Excel -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{--primary:#1f5fa6;--primary-700:#174b83;--accent:#0ea5e9;--bg:#f2f4f8;--card:#fff;--muted:#6b7280;--ok:#16a34a;--warn:#ef4444;--border:#e5e7eb;--delay:#f59e0b;--absent:#ef4444;--notice:#6b7280}
+*{box-sizing:border-box} html,body{overflow-x:hidden}
+body{margin:0;background:var(--bg);font-family:Cairo,sans-serif;color:#111}
+.container{max-width:1100px;margin:24px auto;padding:0 16px}
+header{position:relative;background:linear-gradient(135deg,var(--primary),var(--primary-700));color:#fff;border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{margin:0;font-size:22px;line-height:1.4}
+header p{margin:6px 0 0;color:#e2e8f0;font-size:13px;line-height:1.6}
+#schoolLogo{max-height:64px;max-width:120px;object-fit:contain}
+.logo-wrap{display:flex;align-items:center;gap:8px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:12px}
+.toolbar,.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:1px solid var(--border);border-radius:10px;background:#fff;padding:8px 12px;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--border);border-radius:10px}
+textarea{min-height:110px}
+.small{color:var(--muted);font-size:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-fit{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.table-card{overflow:auto;border-radius:14px}
+table{width:100%;border-collapse:separate;border-spacing:0}
+thead th{background:#eff6ff;padding:10px;border-bottom:1px solid var(--border);text-align:right;position:sticky;top:0}
+tbody td{padding:10px;border-bottom:1px solid var(--border)}
+.mono{font-family:ui-monospace,monospace}
+.nowrap{white-space:nowrap}
+.hidden{display:none}
+.tag{border-radius:999px;padding:2px 8px;font-size:12px}
+.row-meta{display:flex;flex-direction:column;gap:4px}
+.meta-line{font-size:12px;color:#334155}
+.meta-chip{display:inline-flex;gap:6px;align-items:center;font-size:12px}
+.meta-chip .chip{border-radius:999px;padding:2px 8px;border:1px solid #e5e7eb;background:#f8fafc}
+.chip-warn{background:#fff7ed;border:1px solid #fed7aa}
+.chip-danger{background:#fef2f2;border:1px solid #fecaca}
+
+/* Settings panel */
+.settings-btn{background:#fff;color:#fff;border:none;cursor:pointer;font-size:16px;border-radius:10px;padding:8px 14px;font-weight:600;background:rgba(255,255,255,.15);backdrop-filter:blur(2px);border:1px solid rgba(255,255,255,.25)}
+.settings-panel{position:fixed;top:0;right:-380px;width:380px;height:100vh;background:#fff;box-shadow:-3px 0 14px rgba(0,0,0,.12);border-left:1px solid var(--border);transition:.3s;z-index:1000;padding:20px;display:flex;flex-direction:column;gap:12px;overflow:auto}
+.settings-panel.open{right:0}
+.settings-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.close-settings{cursor:pointer;background:none;border:none;font-size:20px;color:#666}
+.settings-group{display:flex;flex-direction:column;gap:6px}
+.settings-note{font-size:12px;color:#64748b}
+.template-box{min-height:90px}
+.footer-note{font-size:12px;color:#475569;margin-top:6px}
+hr{border:none;border-top:1px solid var(--border);margin:6px 0}
+.chk{display:flex;align-items:center;gap:8px}
+.logo-preview{display:flex;align-items:center;gap:10px}
+.logo-preview img{max-height:56px;max-width:140px;border:1px dashed var(--border);padding:6px;border-radius:8px;background:#fafafa}
+
+/* Stats modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:center;align-items:center}
+.modal-content{background:#fff;width:min(980px,94vw);max-height:86vh;overflow:auto;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.close{float:left;cursor:pointer;font-size:26px;color:#555}
+.stats-header{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.stats-summary{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#f8fafc;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px}
+.stats-table{width:100%;border-collapse:collapse;margin-top:8px}
+.stats-table th,.stats-table td{border:1px solid #e5e7eb;padding:8px;text-align:center}
+.stats-table th{background:#f1f5f9}
+.tag-delay{background:#fffbeb;color:#92400e}
+.tag-absent{background:#fef2f2;color:#991b1b}
+.tag-notice{background:#f8fafc;color:#334155}
+
+.badge-warn{display:inline-flex;align-items:center;gap:6px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:2px 8px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>📘 كشوفات الطلاب - ثانوية الأمير عبدالمجيد الأولى</h1>
+      <p>نظام متكامل: كشوفات – إرسال رسائل واتساب – اتصال مباشر. <br>تطوير ودعم وبرمجة / حسين العرياني</p>
+    </div>
+    <div class="logo-wrap">
+      <img id="schoolLogo" alt="شعار المدرسة" class="hidden">
+      <button class="settings-btn" onclick="openSettings()">⚙️ إعدادات</button>
+    </div>
+  </header>
+
+  <!-- شريط الأدوات -->
+  <div class="card">
+    <div class="toolbar">
+      <label class="btn" style="background:var(--primary);color:#fff;border-color:transparent">
+        📥 استيراد Excel
+        <input id="excelInput" type="file" accept=".xlsx,.xls" hidden>
+      </label>
+
+      <label class="btn">
+        ⭳ استعادة نسخة (JSON)
+        <input id="restoreInput" type="file" accept=".json" hidden>
+      </label>
+
+      <button class="btn" id="exportBtn">💾 تنزيل نسخة احتياطية</button>
+      <button class="btn" id="clearBtn">🧹 تفريغ التخزين</button>
+
+      <div style="flex:1;min-width:240px"><input id="searchBox" type="text" placeholder="🔎 بحث بالاسم أو رقم الهوية..."></div>
+
+      <button class="btn" id="printBtn" title="طباعة النتائج المصفّاة">🖨 طباعة</button>
+      <button class="btn" id="exportExcelBtn" title="تصدير النتائج المصفّاة إلى Excel">📤 تصدير Excel</button>
+      <button class="btn" id="exportAllPdfBtn" title="استخراج PDF لكل الطلاب">📄 PDF الكل</button>
+    </div>
+
+    <div class="filters">
+      <div>
+        <label class="small">الصف</label>
+        <select id="gradeFilter"><option value="">كل الصفوف</option></select>
+      </div>
+      <div>
+        <label class="small">الفصل</label>
+        <select id="classFilter" disabled><option value="">كل الفصول</option></select>
+      </div>
+      <button class="btn" id="resetFiltersBtn">♻️ مسح الفلاتر</button>
+      <span class="small">تنسيق Excel: اسم الطالب، الجوال، رقم الهوية، الصف، الفصل</span>
+
+      <button class="btn" id="toggleAddFormBtn" title="إظهار/إخفاء نموذج الإضافة">➕ إضافة / تعديل</button>
+    </div>
+  </div>
+
+  <!-- نموذج إضافة/تعديل (يُخفى افتراضيًا حسب الإعدادات) -->
+  <div class="card" id="addFormCard">
+    <h3 id="formTitle" style="margin-top:0">➕ إضافة طالب جديد</h3>
+    <div class="grid-2">
+      <div><label>اسم الطالب</label><input id="f_name" type="text" placeholder="مثال: محمد علي"></div>
+      <div><label>الجوال</label><input id="f_phone" type="tel" placeholder="05xxxxxxxx"><div class="small">يُحوّل تلقائيًا لصيغة واتساب السعودية (+966)</div></div>
+      <div><label>رقم الهوية</label><input id="f_id" type="text" placeholder="10 أرقام"></div>
+      <div class="grid-fit">
+        <div><label>الصف</label><input id="f_grade" type="text" placeholder="أول / ثاني / ثالث..."></div>
+        <div><label>الفصل</label><input id="f_class" type="text" placeholder="أ / ب / 1 / 2"></div>
+      </div>
+    </div>
+    <div class="toolbar" style="gap:10px;margin-top:12px">
+      <button class="btn" style="background:var(--ok);color:#fff;border-color:transparent" id="saveBtn">حفظ</button>
+      <button class="btn hidden" id="cancelEditBtn">إلغاء التعديل</button>
+    </div>
+  </div>
+
+  <!-- الرسائل الجماعية -->
+  <div class="card" id="waSection">
+    <h3 style="margin-top:0">الرسائل الجماعية واتساب</h3>
+    <div class="grid-2">
+      <div>
+        <label>📩 نوع الرسالة</label>
+        <select id="templateSelect">
+          <option value="delay">1) تأخر ابنكم اليوم</option>
+          <option value="absent">2) غياب ابنكم اليوم</option>
+          <option value="custom">3) رسالة مخصصة</option>
+        </select>
+        <div class="small">المتغيرات: {name}، {day}، {date}، {hijri}، {fullDate}، {time}</div>
+      </div>
+
+      <div style="display:flex;align-items:flex-end">
+        <label class="btn" style="display:inline-flex;align-items:center;gap:8px">✅ تحديد كل الظاهر
+          <input type="checkbox" id="selectAllFiltered" hidden>
+        </label>
+      </div>
+
+      <div>
+        <label>نص الرسالة</label>
+        <textarea id="bulkMsg" placeholder="سيتم توليد النص تلقائيًا من القالب ويمكنك تعديله"></textarea>
+      </div>
+
+      <div>
+        <label>خيارات الإرسال</label>
+        <div class="grid-fit">
+          <button class="btn" style="background:var(--primary);color:#fff;border-color:transparent" id="bulkWhatsAppBtn">✨ إعداد روابط واتساب</button>
+          <button class="btn" style="background:var(--ok);color:#fff;border-color:transparent" id="startAutoBtn">📤 إرسال تلقائي (واحد بعد الآخر)</button>
+          <button class="btn" style="background:var(--warn);color:#fff;border-color:transparent" id="stopAutoBtn" disabled>⏹ إيقاف الإرسال</button>
+          <button class="btn" style="background:var(--warn);color:#fff;border-color:transparent" id="bulkDeleteBtn">🗑 حذف المحددين</button>
+        </div>
+        <div id="autoStatus" class="small" style="display:none;margin-top:6px">الإرسال غير نشط</div>
+        <div class="small">قد يمنع المتصفح النوافذ التلقائية. يُفضّل على الكمبيوتر (واتساب ويب).</div>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:10px 0"></div>
+    <div id="bulkLinks" class="grid-fit hidden"></div>
+  </div>
+
+  <!-- الجدول -->
+  <div class="card" style="padding:0">
+    <div class="table-card">
+      <table id="studentsTable">
+        <thead>
+          <tr>
+            <th class="nowrap">تحديد</th>
+            <th>الطالب</th><th>الجوال</th><th>رقم الهوية</th><th>الصف</th><th>الفصل</th>
+            <th class="nowrap">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- عدادات -->
+  <div class="card">
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a">إجمالي: <b id="countTotal">0</b></span>
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a">محدد: <b id="countSelected">0</b></span>
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a">مطابقة: <b id="countFiltered">0</b></span>
+    </div>
+  </div>
+</div>
+
+<!-- الإعدادات الجانبية -->
+<div id="settingsPanel" class="settings-panel">
+  <div class="settings-header">
+    <h3>⚙️ الإعدادات</h3>
+    <button class="close-settings" onclick="closeSettings()">✖</button>
+  </div>
+
+  <div class="settings-group">
+    <label>📅 ضبط التاريخ الهجري (+ أو - أيام):</label>
+    <input type="number" id="hijriAdjust" min="-2" max="2" value="0">
+    <div class="settings-note">مثال: إذا التاريخ الهجري متقدم يوم ضع -1</div>
+  </div>
+
+  <hr>
+
+  <div class="settings-group">
+    <label>🟦 قالب تأخر الطالب</label>
+    <textarea id="tplDelay" class="template-box"></textarea>
+  </div>
+  <div class="settings-group">
+    <label>🟧 قالب غياب الطالب</label>
+    <textarea id="tplAbsent" class="template-box"></textarea>
+  </div>
+  <div class="settings-group">
+    <label>🟨 قالب الرسالة المخصصة (يستخدم مع "رسالة مخصصة")</label>
+    <textarea id="tplCustom" class="template-box"></textarea>
+    <div class="settings-note">المتغيرات المدعومة: {name}، {day}، {date}، {hijri}، {fullDate}، {time}</div>
+  </div>
+
+  <hr>
+
+  <div class="settings-group">
+    <label>📄 إعدادات الطباعة والتصدير:</label>
+    <label class="chk"><input type="checkbox" id="col_name" checked> اسم الطالب</label>
+    <label class="chk"><input type="checkbox" id="col_phone" checked> الجوال</label>
+    <label class="chk"><input type="checkbox" id="col_id" checked> رقم الهوية</label>
+    <label class="chk"><input type="checkbox" id="col_grade" checked> الصف</label>
+    <label class="chk"><input type="checkbox" id="col_class" checked> الفصل</label>
+    <div class="settings-note">تُطبق على الطباعة وExcel فقط. الجدول على الشاشة يبقى كاملاً.</div>
+  </div>
+
+  <hr>
+
+  <!-- إعدادات احترافية جديدة -->
+  <div class="settings-group">
+    <label>🧠 تفعيل عناصر ذكية في صف الطالب</label>
+    <label class="chk"><input type="checkbox" id="opt_showRowSummary" checked> إظهار عداد تلقائي تحت الاسم (غياب/دقائق تأخر)</label>
+    <label class="chk"><input type="checkbox" id="opt_showLastMsg" checked> إظهار آخر رسالة وتاريخها تحت الاسم</label>
+    <label class="chk"><input type="checkbox" id="opt_showWarnings" checked> إظهار تنبيه داخلي إذا وصل الطالب للحد</label>
+    <label class="chk"><input type="checkbox" id="opt_showRowWA" checked> إظهار زر واتساب في كل صف</label>
+  </div>
+
+  <div class="settings-group">
+    <label>🚨 العتبات والتنبيهات</label>
+    <div class="grid-2">
+      <div>
+        <label>عدد التأخر لظهور "إنذار"</label>
+        <input id="thr_delay_alert" type="number" min="1" value="3">
+      </div>
+      <div>
+        <label>عدد التأخر لظهور "تحذير كبير"</label>
+        <input id="thr_delay_warn" type="number" min="1" value="5">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <label>عدد الغياب لظهور "إنذار"</label>
+        <input id="thr_absent_alert" type="number" min="1" value="3">
+      </div>
+      <div>
+        <label>عدد الغياب لظهور "تحذير كبير"</label>
+        <input id="thr_absent_warn" type="number" min="1" value="5">
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <label>🧩 التحكم في الواجهة</label>
+    <label class="chk"><input type="checkbox" id="opt_collapseAddForm" checked> إخفاء نموذج إضافة/تعديل حتى الضغط على ➕</label>
+    <label class="chk"><input type="checkbox" id="opt_hideWASection" > إخفاء قسم رسائل واتساب (يظهر فقط عند الحاجة)</label>
+  </div>
+
+  <div class="grid-fit">
+    <button class="btn" style="background:var(--primary);color:#fff" onclick="saveTemplateSettings()">💾 حفظ القوالب</button>
+    <button class="btn" onclick="resetTemplates()">🔁 استعادة قوالب الرسائل</button>
+    <button class="btn" style="background:var(--ok);color:#fff" onclick="savePE()">💾 حفظ إعدادات الطباعة/التصدير</button>
+    <button class="btn" onclick="resetPE()">🔁 افتراضي للطباعة/التصدير</button>
+    <button class="btn" style="background:var(--ok);color:#fff" onclick="saveProOptions()">💾 حفظ الإعدادات الاحترافية</button>
+  </div>
+
+  <hr>
+  <div class="settings-group">
+    <label>🖼️ شعار المدرسة (يظهر أعلى يمين + في الطباعة):</label>
+    <div class="logo-preview">
+      <img id="logoPreview" class="hidden" alt="معاينة الشعار">
+      <span id="logoNone" class="small">لا يوجد شعار حاليًا</span>
+    </div>
+    <div class="grid-fit">
+      <label class="btn">⬆️ اختر شعار
+        <input id="logoInput" type="file" accept="image/*" hidden>
+      </label>
+      <button class="btn" id="logoRemoveBtn">🗑 حذف الشعار</button>
+    </div>
+    <div class="settings-note">يُحفظ محليًا فقط (بدون رفع للإنترنت).</div>
+  </div>
+
+  <div class="footer-note">سيتم حفظ كل الإعدادات محليًا وتطبيقها فورًا.</div>
+</div>
+<div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.15);display:none;z-index:999" onclick="closeSettings()"></div>
+
+<script>
+/* ===== مفاتيح التخزين ===== */
+const LS_KEY='students_db_v1', SETTINGS_KEY='students_settings_v1', TPL_KEY='messageTemplates_v1', PE_KEY='printExport_prefs_v1', LOGO_KEY='school_logo_base64_v1';
+const REC_KEY = 'attendance_records_v1'; // سجلات الغياب/التأخر/الرسائل العامة
+const PRO_KEY = 'pro_options_v1'; // خيارات احترافية
+
+/* ===== الحالة العامة ===== */
+let students=[], editingUid=null, searchText='', gradeFilter='', classFilter='';
+let selectedUids=new Set(); let autoTimer=null, autoQueue=[], autoIndex=0;
+let settings={hijriAdjust:0};
+let templates=null; // {delay, absent, custom}
+let pePrefs=null;   // {columns:{name,phone,id,grade,class}}
+let schoolLogo=null; // base64
+let pro={ // افتراضي
+  showRowSummary:true,
+  showLastMsg:true,
+  showWarnings:true,
+  showRowWA:true,
+  collapseAddForm:true,
+  hideWASection:false,
+  thr:{ delay_alert:3, delay_warn:5, absent_alert:3, absent_warn:5 }
+};
+
+/* ===== أدوات ===== */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const uid=()=> 'S'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const escapeHtml=t=>String(t??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+const escapeAttr=v=>String(v).replace(/"/g,'&quot;');
+const localeSort=(a,b)=>a.localeCompare(b,'ar',{numeric:true,sensitivity:'base'});
+
+/* ===== واتساب ===== */
+function toSaudiWhatsApp(numRaw){if(!numRaw)return'';let n=String(numRaw).replace(/\D+/g,'');if(n.startsWith('00966'))n=n.replace(/^00966/,'');if(n.startsWith('966'))n=n.replace(/^966/,'');if(n.startsWith('0'))n=n.slice(1);return '+966'+n}
+function waLink(phone,text){const p=toSaudiWhatsApp(phone).replace(/^\+/,'');return `https://wa.me/${p}?text=${encodeURIComponent(text||'')}`}
+
+/* ===== اليوم + التاريخ ===== */
+function todayInfo(){
+  const d = new Date();
+  const days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const day = days[d.getDay()];
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  const miladi = `${dd} / ${mm} / ${yyyy}`;
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2,'0');
+  const isPM = hours >= 12; const period = isPM ? 'مساءً' : 'صباحًا';
+  if(hours == 0) hours = 12; if(hours > 12) hours -= 12;
+  const time = `${hours}:${minutes} ${period}`;
+  const adj = Number(settings.hijriAdjust || 0);
+  const dAdj = new Date(d.getTime() + adj * 86400000);
+  let hijri = '';
+  try {
+    const parts = new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(dAdj);
+    const hDay = parts.find(p=>p.type==='day')?.value || '';
+    const hMon = parts.find(p=>p.type==='month')?.value || '';
+    const hYear = parts.find(p=>p.type==='year')?.value || '';
+    hijri = `${hDay} / ${hMon} / ${hYear}هـ`;
+  } catch { hijri = '(الهجري غير مدعوم)'; }
+  return { day, miladi, hijri, time, fullDate: `${miladi} الموافق ${hijri}`, datetime: `${day} ${miladi} - ${time}` };
+}
+
+/* ===== القوالب ===== */
+function defaultTemplates(){return{
+  delay: `نود إبلاغكم بأن ابنكم {name} تأخر عن الحضور اليوم {day} {fullDate}.`,
+  absent:`نود إبلاغكم بأن ابنكم {name} غاب عن الحضور اليوم {day} {fullDate}.`,
+  custom:`السلام عليكم ولي أمر الطالب {name}، اليوم: {day}، التاريخ: {date} الموافق {hijri}.`
+}}
+function loadTemplates(){
+  try{ templates = JSON.parse(localStorage.getItem(TPL_KEY)||'null') || defaultTemplates(); }
+  catch{ templates = defaultTemplates(); }
+  $('#tplDelay').value  = templates.delay;
+  $('#tplAbsent').value = templates.absent;
+  $('#tplCustom').value = templates.custom;
+}
+function saveTemplates(){
+  templates = {
+    delay:  $('#tplDelay').value || defaultTemplates().delay,
+    absent: $('#tplAbsent').value || defaultTemplates().absent,
+    custom: $('#tplCustom').value || defaultTemplates().custom
+  };
+  localStorage.setItem(TPL_KEY, JSON.stringify(templates));
+}
+function resetTemplates(){
+  templates = defaultTemplates();
+  localStorage.setItem(TPL_KEY, JSON.stringify(templates));
+  $('#tplDelay').value  = templates.delay;
+  $('#tplAbsent').value = templates.absent;
+  $('#tplCustom').value = templates.custom;
+  applyTemplateToBox();
+  alert('تمت استعادة قوالب الرسائل.');
+}
+
+/* ===== إعدادات الطباعة/التصدير ===== */
+function defaultPE(){ return { columns:{ name:true, phone:true, id:true, grade:true, class:true } } }
+function loadPE(){
+  try{ pePrefs = JSON.parse(localStorage.getItem(PE_KEY)||'null') || defaultPE(); }
+  catch{ pePrefs = defaultPE(); }
+  $('#col_name').checked  = !!pePrefs.columns.name;
+  $('#col_phone').checked = !!pePrefs.columns.phone;
+  $('#col_id').checked    = !!pePrefs.columns.id;
+  $('#col_grade').checked = !!pePrefs.columns.grade;
+  $('#col_class').checked = !!pePrefs.columns.class;
+}
+function savePE(){
+  pePrefs = { columns:{
+      name:  $('#col_name').checked,
+      phone: $('#col_phone').checked,
+      id:    $('#col_id').checked,
+      grade: $('#col_grade').checked,
+      class: $('#col_class').checked
+    }};
+  localStorage.setItem(PE_KEY, JSON.stringify(pePrefs));
+  alert('تم حفظ إعدادات الطباعة/التصدير.');
+}
+function resetPE(){ pePrefs = defaultPE(); localStorage.setItem(PE_KEY, JSON.stringify(pePrefs)); loadPE(); alert('تمت استعادة الإعدادات الافتراضية للطباعة/التصدير.'); }
+
+/* ===== الشعار ===== */
+function loadLogo(){
+  try{ schoolLogo = localStorage.getItem(LOGO_KEY) || null; }catch{ schoolLogo=null; }
+  const headerImg = $('#schoolLogo'), prevImg=$('#logoPreview'), none=$('#logoNone');
+  if(schoolLogo){ headerImg.src = schoolLogo; headerImg.classList.remove('hidden'); prevImg.src = schoolLogo; prevImg.classList.remove('hidden'); none.classList.add('hidden'); }
+  else{ headerImg.classList.add('hidden'); prevImg.classList.add('hidden'); none.classList.remove('hidden'); }
+}
+function handleLogoFile(file){ if(!file) return; const reader = new FileReader(); reader.onload = () => { try{ localStorage.setItem(LOGO_KEY, reader.result); loadLogo(); alert('تم حفظ الشعار بنجاح.'); }catch(e){ alert('تعذر حفظ الشعار. قد يكون حجمه كبيرًا جدًا.'); } }; reader.readAsDataURL(file); }
+document.getElementById('logoInput')?.addEventListener('change',e=>{const f=e.target.files?.[0];handleLogoFile(f);e.target.value=''});
+document.getElementById('logoRemoveBtn')?.addEventListener('click',()=>{if(confirm('حذف الشعار؟')){localStorage.removeItem(LOGO_KEY);schoolLogo=null;loadLogo();}});
+
+/* ===== الرسائل ===== */
+function applyPlaceholders(text, name, tInfo = null){ const t = tInfo || todayInfo(); return String(text || '')
+  .replaceAll('{name}', name || '')
+  .replaceAll('{day}', t.day)
+  .replaceAll('{date}', t.miladi)
+  .replaceAll('{hijri}', t.hijri)
+  .replaceAll('{fullDate}', t.fullDate)
+  .replaceAll('{time}', t.time)
+  .replaceAll('{datetime}', t.datetime);
+}
+function buildTemplate(type,studentName){ const map = { delay: templates.delay, absent: templates.absent, custom: ($('#bulkMsg')?.value||templates.custom) }; const raw = map[type] ?? templates.custom; return applyPlaceholders(raw, studentName, todayInfo()); }
+function applyTemplateToBox(){ const sel = $('#templateSelect')?.value; if(!sel || !$('#bulkMsg')) return; if(sel==='custom'){ $('#bulkMsg').value = templates.custom || defaultTemplates().custom; } else if(sel==='delay'){ $('#bulkMsg').value = templates.delay.replaceAll('{name}','{name}'); } else if(sel==='absent'){ $('#bulkMsg').value = templates.absent.replaceAll('{name}','{name}'); } }
+
+/* ===== تخزين ===== */
+function saveLS(){localStorage.setItem(LS_KEY,JSON.stringify(students));refreshFiltersOptions();render()}
+function loadLS(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'[]');students=Array.isArray(v)?v:[]}catch{students=[]}}
+function loadSettings(){try{const s=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');settings={hijriAdjust:Number(s.hijriAdjust||0), schoolStart:s.schoolStart||'07:15'}}catch{settings={hijriAdjust:0, schoolStart:'07:15'}}}
+function loadPro(){ try{ const p=JSON.parse(localStorage.getItem(PRO_KEY)||'null'); if(p) pro={...pro,...p,thr:{...pro.thr,...(p.thr||{})}}; }catch{} }
+function saveProOptions(){
+  pro.showRowSummary = $('#opt_showRowSummary').checked;
+  pro.showLastMsg = $('#opt_showLastMsg').checked;
+  pro.showWarnings = $('#opt_showWarnings').checked;
+  pro.showRowWA = $('#opt_showRowWA').checked;
+  pro.collapseAddForm = $('#opt_collapseAddForm').checked;
+  pro.hideWASection = $('#opt_hideWASection').checked;
+  pro.thr.delay_alert = Math.max(1, Number($('#thr_delay_alert').value||3));
+  pro.thr.delay_warn  = Math.max(1, Number($('#thr_delay_warn').value||5));
+  pro.thr.absent_alert= Math.max(1, Number($('#thr_absent_alert').value||3));
+  pro.thr.absent_warn = Math.max(1, Number($('#thr_absent_warn').value||5));
+  localStorage.setItem(PRO_KEY, JSON.stringify(pro));
+  applyProUI(); render(); alert('تم حفظ الإعدادات الاحترافية.');
+}
+
+/* ===== فلاتر ===== */
+function refreshFiltersOptions(){const gradeSel=$('#gradeFilter');if(!gradeSel)return;const grades=[...new Set(students.map(s=>(s.grade||'').trim()).filter(Boolean))].sort(localeSort);const prev=gradeFilter;gradeSel.innerHTML=`<option value="">كل الصفوف</option>`+grades.map(g=>`<option ${g===prev?'selected':''} value="${g.replace(/"/g,'&quot;')}">${g.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</option>`).join('');applyClassOptions();gradeFilter=$('#gradeFilter').value||'';classFilter=$('#classFilter').value||''}
+function applyClassOptions(){const classSel=$('#classFilter');if(!classSel)return;const g=$('#gradeFilter')?.value||'';let classes=[];if(g){classes=[...new Set(students.filter(s=>(s.grade||'').trim()===g).map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}else{classes=[...new Set(students.map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}const keep=classFilter;classSel.disabled=false;classSel.innerHTML=`<option value="">كل الفصول</option>`+classes.map(c=>`<option ${c===keep?'selected':''} value="${c.replace(/"/g,'&quot;')}">${c.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</option>`).join('')}
+function filterFn(s){const q=(searchText||'').trim().toLowerCase();const mt=!q||((s.name||'').toLowerCase().includes(q)||String(s.id||'').toLowerCase().includes(q));const mg=!gradeFilter||(String(s.grade||'').trim()===gradeFilter);const mc=!classFilter||(String(s.class||'').trim()===classFilter);return mt&&mg&&mc}
+function getFiltered(){return students.filter(filterFn)}
+
+/* ===== سجلات ===== */
+function loadRecords(){ try{ return JSON.parse(localStorage.getItem(REC_KEY)||'{}'); } catch { return {}; } }
+function saveRecords(rec){ localStorage.setItem(REC_KEY, JSON.stringify(rec)); }
+function normPhone(p){ return (''+(p||'')).replace(/\D/g,'').replace(/^00966/,'966').replace(/^\+?966/,'966').replace(/^9660/,'966'); }
+function findUidByPhone(phone){ const np = normPhone(phone); for(const s of students){ const sp = normPhone(toSaudiWhatsApp(s.phone)); if(sp.endsWith(np) || sp.includes(np) || np.includes(sp)) return s.uid; } return null; }
+function getStartMinutes(){ const t=(settings.schoolStart||'07:15').trim(); const m=/^(\d{1,2}):(\d{2})$/.exec(t); if(!m) return 7*60+15; return Math.min(23,Math.max(0,parseInt(m[1],10)))*60 + Math.min(59,Math.max(0,parseInt(m[2],10))); }
+function computeDelayMinutes(d=new Date()){ const minsNow = d.getHours()*60 + d.getMinutes(); const start = getStartMinutes(); return Math.max(0, minsNow - start); }
+function addRecord(uid,type,extra={}){ if(!uid) return; const recs = loadRecords(); if(!recs[uid]) recs[uid] = []; const t = todayInfo(); const rec = { id: Date.now().toString(36)+Math.random().toString(36).slice(2,7), type, minutes: (type==='delay') ? computeDelayMinutes() : null, date: t.miladi, hijri: t.hijri, time: t.time, ts: Date.now(), ...extra }; recs[uid].push(rec); saveRecords(recs); }
+function deleteRecord(uid, idx){ const recs = loadRecords(); if(recs[uid]){ recs[uid].splice(idx,1); saveRecords(recs); } if($('#statsModal')?.style.display==='flex'){ showStats(uid); } }
+function editRecord(uid, idx){ const recs=loadRecords(); const r=recs[uid]?.[idx]; if(!r) return; const newType = prompt('نوع السجل: delay | absent | notice', r.type||'notice'); if(!newType) return; r.type=newType==='delay'?'delay':(newType==='absent'?'absent':'notice'); if(r.type==='delay'){ const m = Number(prompt('دقائق التأخر', String(r.minutes||0))); r.minutes = isNaN(m)?0:Math.max(0,m); } else { r.minutes=null; }
+  saveRecords(recs); showStats(uid);
+}
+
+/* ===== ملخص السجلات لكل طالب ===== */
+function summarize(uid){ const recs = loadRecords()[uid]||[]; let absent=0, delayMin=0, last=null; recs.forEach(r=>{ if(r.type==='absent') absent++; if(r.type==='delay') delayMin += (r.minutes||0); if(!last || (r.ts||0)>(last.ts||0)) last=r; }); const delayCount = recs.filter(r=>r.type==='delay').length; const noticeCount = recs.filter(r=>r.type==='notice').length; return { absent, delayMin, delayCount, noticeCount, last } }
+
+/* ===== تحديد ===== */
+function updateSelectedCount(){const el=$('#countSelected');if(el)el.textContent=selectedUids.size}
+function clearSelectionsAndLinks(){selectedUids.clear();$$('.rowSel').forEach(cb=>cb.checked=false);const master=$('#selectAllFiltered');if(master)master.checked=false;const box=$('#bulkLinks');if(box){box.innerHTML='';box.classList.add('hidden')}updateSelectedCount()}
+function getSelected(){return students.filter(s=>selectedUids.has(s.uid))}
+
+/* ===== رسم الجدول مع الملخص والإنذارات ===== */
+function render(){ const tbody=$('#tbody'); if(!tbody) return; tbody.innerHTML=''; const filtered=getFiltered(); const recs=loadRecords();
+  filtered.forEach(s=>{ const tr=document.createElement('tr'); const checked=selectedUids.has(s.uid)?'checked':''; const sum=summarize(s.uid);
+    // بناء سطر الاسم مع الملخص والرسالة الأخيرة
+    let nameHtml = `<div class="row-meta"><b>${(s.name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</b>`;
+    if(pro.showRowSummary){ nameHtml += `<div class="meta-line">📊 ${sum.absent} غياب – ${sum.delayMin} دقيقة تأخر</div>`; }
+    if(pro.showLastMsg){ if(sum.last){ nameHtml += `<div class="meta-line">📬 آخر رسالة: ${sum.last.date} - ${sum.last.time}</div>`; } }
+    // إنذارات
+    let warnHtml = '';
+    if(pro.showWarnings){
+      if(sum.delayCount >= pro.thr.delay_alert){ warnHtml += `<span class="badge-warn">إنذار تأخر (${sum.delayCount})</span>`; }
+      if(sum.absent >= pro.thr.absent_alert){ warnHtml += ` <span class="badge-warn">إنذار غياب (${sum.absent})</span>`; }
+    }
+    if(warnHtml) nameHtml += `<div class="meta-chip">${warnHtml}</div>`;
+    nameHtml += `</div>`;
+
+    const waBtn = pro.showRowWA ? `<a data-type="general" data-uid="${s.uid}" class="btn" style="padding:6px 9px;background:var(--accent);color:#003049;border-color:transparent" target="_blank" href="${waLink(s.phone,`السلام عليكم ولي أمر ${s.name??''}`)}">🟢 واتساب</a>` : '';
+
+    tr.innerHTML = `
+<td><input type="checkbox" class="rowSel" data-uid="${s.uid}" ${checked}></td>
+<td>${nameHtml}</td>
+<td class="mono">${(s.phone||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>
+<td class="mono">${(s.id||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>
+<td>${(s.grade||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>
+<td>${(s.class||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>
+<td>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <a class="btn" style="padding:6px 9px" href="tel:${encodeURIComponent(s.phone||'')}" title="اتصال">📞</a>
+    ${waBtn}
+    <button class="btn stats-btn" style="padding:6px 9px" title="عرض إحصائيات الطالب" data-act="stats" data-uid="${s.uid}">📊</button>
+    <button class="btn" style="padding:6px 9px" data-act="edit" data-uid="${s.uid}">✏</button>
+    <button class="btn" style="padding:6px 9px;background:var(--warn);color:#fff;border-color:transparent" data-act="del" data-uid="${s.uid}">🗑</button>
+  </div>
+</td>`;
+    tbody.appendChild(tr);
+  });
+  $('#countTotal').textContent=students.length; $('#countFiltered').textContent=filtered.length; updateSelectedCount();
+}
+
+/* ===== CRUD ===== */
+function fillForm(s){$('#f_name').value=s?.name||'';$('#f_phone').value=s?.phone||'';$('#f_id').value=s?.id||'';$('#f_grade').value=s?.grade||'';$('#f_class').value=s?.class||''}
+function clearForm(){editingUid=null;fillForm({});$('#formTitle').textContent='➕ إضافة طالب جديد';$('#cancelEditBtn').classList.add('hidden');$('#saveBtn').textContent='حفظ'}
+function submitForm(){const s={name:$('#f_name').value.trim(),phone:$('#f_phone').value.trim(),id:$('#f_id').value.trim(),grade:$('#f_grade').value.trim(),class:$('#f_class').value.trim()};if(!s.name){alert('يرجى إدخال اسم الطالب');return}if(editingUid){const i=students.findIndex(x=>x.uid===editingUid);if(i>-1)students[i]={...students[i],...s}}else students.unshift({uid:uid(),...s});saveLS();clearForm()}
+function deleteByUid(u){const i=students.findIndex(x=>x.uid===u);if(i>-1){students.splice(i,1);saveLS()}}
+
+/* ===== إعدادات جانبية أساسية ===== */
+function openSettings(){ $('#hijriAdjust').value=Number(settings.hijriAdjust||0); if(!templates) loadTemplates(); if(!pePrefs) loadPE(); loadLogo(); // pro
+  $('#opt_showRowSummary').checked=pro.showRowSummary; $('#opt_showLastMsg').checked=pro.showLastMsg; $('#opt_showWarnings').checked=pro.showWarnings; $('#opt_showRowWA').checked=pro.showRowWA; $('#opt_collapseAddForm').checked=pro.collapseAddForm; $('#opt_hideWASection').checked=pro.hideWASection; $('#thr_delay_alert').value=pro.thr.delay_alert; $('#thr_delay_warn').value=pro.thr.delay_warn; $('#thr_absent_alert').value=pro.thr.absent_alert; $('#thr_absent_warn').value=pro.thr.absent_warn;
+  $('#settingsPanel').classList.add('open'); $('#settingsOverlay').style.display='block' }
+function closeSettings(){ $('#settingsPanel').classList.remove('open'); $('#settingsOverlay').style.display='none' }
+function saveSettings(){const v=Number($('#hijriAdjust').value||0);settings.hijriAdjust=Math.max(-2,Math.min(2,v));localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));alert('تم حفظ إعدادات التاريخ الهجري.')}
+
+/* ===== Excel ===== */
+function normalizeHeaders(row){const get=keys=>{for(const k of keys){for(const kk of Object.keys(row)){if(norm(kk)===norm(k))return String(row[kk]??'').trim()}}return''};const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[ـ_]/g,'').replace(/[اإأآ]/g,'ا');return{name:get(['اسم الطالب','الاسم','name','student name','fullname']),phone:get(['الجوال','الهاتف','رقم الجوال','phone','mobile','whatsapp']),id:get(['رقم الهوية','هوية','id','national id','nid','رقم السجل المدني','رقمالطالب']),grade:get(['الصف','grade','level']),class:get(['الفصل','شعبة','class','section'])}}
+
+/* ===== الأحداث العامة ===== */
+document.getElementById('saveBtn').addEventListener('click',submitForm);
+document.getElementById('cancelEditBtn').addEventListener('click',clearForm);
+document.getElementById('searchBox').addEventListener('input',e=>{searchText=e.target.value||'';render()});
+document.getElementById('gradeFilter').addEventListener('change',e=>{gradeFilter=e.target.value||'';applyClassOptions();classFilter=document.getElementById('classFilter').value||'';render()});
+document.getElementById('classFilter').addEventListener('change',e=>{classFilter=e.target.value||'';render()});
+document.getElementById('resetFiltersBtn').addEventListener('click',()=>{searchText='';gradeFilter='';classFilter='';document.getElementById('searchBox').value='';refreshFiltersOptions();render()});
+document.getElementById('clearBtn').addEventListener('click',()=>{if(confirm('سيتم حذف كل البيانات المخزنة محليًا. هل أنت متأكد؟')){students=[];localStorage.removeItem(REC_KEY);saveLS();clearForm();clearSelectionsAndLinks()}});
+
+document.getElementById('toggleAddFormBtn').addEventListener('click',()=>{ const c=document.getElementById('addFormCard'); c.classList.toggle('hidden'); });
+
+document.getElementById('selectAllFiltered').addEventListener('change',e=>{const state=e.target.checked;const visible=new Set(getFiltered().map(s=>s.uid));if(state)visible.forEach(u=>selectedUids.add(u));else visible.forEach(u=>selectedUids.delete(u));document.querySelectorAll('.rowSel').forEach(cb=>{if(visible.has(cb.dataset.uid))cb.checked=state});updateSelectedCount()});
+document.addEventListener('change',e=>{if(e.target.classList.contains('rowSel')){const u=e.target.dataset.uid;e.target.checked?selectedUids.add(u):selectedUids.delete(u);updateSelectedCount()}});
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b)return;const act=b.dataset.act,u=b.dataset.uid;if(act==='stats'){ showStats(u); } else if(act==='edit'){const s=students.find(x=>x.uid===u);if(s){editingUid=u;fillForm(s);document.getElementById('formTitle').textContent='✏ تعديل بيانات الطالب';document.getElementById('cancelEditBtn').classList.remove('hidden');document.getElementById('saveBtn').textContent='تحديث'; if(document.getElementById('addFormCard').classList.contains('hidden')) document.getElementById('addFormCard').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'})}} else if(act==='del'){if(confirm('حذف هذا الطالب؟'))deleteByUid(u)}});
+
+document.getElementById('bulkDeleteBtn').addEventListener('click',()=>{const chosen=getSelected();if(!chosen.length){alert('لا يوجد طلاب محددون.');return}if(!confirm(`سيتم حذف ${chosen.length} طالب. هل أنت متأكد؟`))return;const remove=new Set(chosen.map(s=>s.uid));students=students.filter(s=>!remove.has(s.uid));const recs=loadRecords(); for(const u of remove){ delete recs[u]; } saveRecords(recs); saveLS();clearSelectionsAndLinks()});
+
+document.getElementById('bulkWhatsAppBtn').addEventListener('click',()=>{const sel=getSelected(), box=document.getElementById('bulkLinks');box.innerHTML='';if(!sel.length){alert('اختر طلابًا أولًا.');return}const tSel=document.getElementById('templateSelect').value;sel.forEach(s=>{const msg=buildTemplate(tSel,s.name||'');const a=document.createElement('a');a.className='btn';a.style.padding='6px 9px';a.style.background='var(--accent)';a.style.color='#003049';a.target='_blank';a.rel='noopener';a.href=waLink(s.phone,msg);a.textContent=`واتساب: ${s.name||s.phone}`;box.appendChild(a)});const done=document.createElement('button');done.className='btn';done.style.marginTop='8px';done.textContent='✅ تم الإرسال اليدوي (مسح التحديد)';done.onclick=()=>clearSelectionsAndLinks();box.appendChild(done);box.classList.remove('hidden');box.scrollIntoView({behavior:'smooth',block:'center'})});
+
+document.getElementById('startAutoBtn').addEventListener('click',()=>{const sel=getSelected();if(!sel.length){alert('اختر طلابًا أولاً.');return}const tSel=document.getElementById('templateSelect').value;autoQueue=sel.map(s=>({url:waLink(s.phone,buildTemplate(tSel,s.name||'')),name:s.name||s.phone,uid:s.uid}));autoIndex=0;startAutoSending()});
+document.getElementById('stopAutoBtn').addEventListener('click',()=>stopAutoSending(true));
+
+function startAutoSending(){if(!autoQueue.length){alert('لا توجد عناصر للإرسال.');return}if(autoTimer){clearInterval(autoTimer);autoTimer=null}document.getElementById('startAutoBtn').disabled=true;document.getElementById('stopAutoBtn').disabled=false;showAutoStatus(`بدء الإرسال التلقائي لعدد (${autoQueue.length}) طالب...`);openInNewTabSafe(autoQueue[autoIndex].url);autoIndex++;autoTimer=setInterval(()=>{if(autoIndex>=autoQueue.length){stopAutoSending(false);return}openInNewTabSafe(autoQueue[autoIndex].url);autoIndex++;showAutoStatus(`يتم الإرسال... (${autoIndex}/${autoQueue.length})`)},2000)}
+function stopAutoSending(manual){if(autoTimer){clearInterval(autoTimer);autoTimer=null}document.getElementById('startAutoBtn').disabled=false;document.getElementById('stopAutoBtn').disabled=true;showAutoStatus(manual?'تم إيقاف الإرسال التلقائي. ⏹':'اكتمل الإرسال التلقائي. ✅');clearSelectionsAndLinks()}
+function showAutoStatus(t){const s=document.getElementById('autoStatus');if(s){s.textContent=t;s.style.display='inline-block'}}
+function openInNewTabSafe(url){const w=window.open(url,'_blank');if(!w){alert('المتصفح منع النوافذ المنبثقة. اسمح بالـ Pop-ups ثم أعد المحاولة.');stopAutoSending(true)}}
+
+/* ===== أعمدة مختارة للطباعة/التصدير ===== */
+function getSelectedColumns(){ const order=['name','phone','id','grade','class']; const labels={name:'اسم الطالب',phone:'الجوال',id:'رقم الهوية',grade:'الصف',class:'الفصل'}; const cols=pePrefs?.columns || defaultPE().columns; const active=order.filter(k=>!!cols[k]); return {order:active, labels}; }
+
+/* ===== طباعة الجدول ===== */
+function printTableOnly(){ const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لطباعتها');return} const t=todayInfo(), grade=gradeFilter||'كل الصفوف', cls=classFilter||'كل الفصول'; const {order,labels}=getSelectedColumns(); if(order.length===0){alert('لم تختر أي أعمدة للطباعة من الإعدادات.');return}
+  const thead = `<tr><th>الرقم</th>${order.map(k=>`<th>${labels[k]}</th>`).join('')}</tr>`;
+  const rows  = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${String(s[k]||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>`).join('')}</tr>`).join('');
+  const logoImg = localStorage.getItem(LOGO_KEY);
+  const logoHtml = logoImg ? `<img src="${logoImg}" style="float:right;max-height:70px;max-width:140px;object-fit:contain;margin:6px 0 6px 12px" alt="شعار">` : '';
+  const html=`<html dir="rtl"><head><title>كشف الطلاب</title>
+  <style> body{font-family:Cairo,sans-serif;margin:20px} .head{display:block;overflow:auto} h2{margin:0 0 6px 0;text-align:center} p{margin:4px 0 10px 0;text-align:center} table{width:100%;border-collapse:collapse;margin-top:15px} th,td{border:1px solid #000;padding:6px;font-size:14px} th{background:#f0f0f0} </style>
+  </head><body>
+  <div class="head">${logoHtml}<h2>📋 كشف الطلاب</h2></div>
+  <p>الصف: <b>${grade}</b> — الفصل: <b>${cls}</b><br>التاريخ: ${t.fullDate}</p>
+  <table><thead>${thead}</thead><tbody>${rows}</tbody></table>
+  </body></html>`;
+  const w=window.open('','_blank'); w.document.open(); w.document.write(html); w.document.close(); w.onload=()=>{w.print(); setTimeout(()=>w.close(),500)}
+}
+document.getElementById('printBtn').addEventListener('click',printTableOnly);
+
+/* ===== تصدير Excel ===== */
+function exportFilteredExcel(){ const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لتصديرها.');return} const {order,labels}=getSelectedColumns(); if(order.length===0){alert('لم تختر أي أعمدة للتصدير من الإعدادات.');return} const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = s[k] || ''; }); return obj; }); const ws=XLSX.utils.json_to_sheet(rows), wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'الطلاب'); const t=todayInfo(); XLSX.writeFile(wb,`كشف_الطلاب_${t.miladi}.xlsx`); }
+document.getElementById('exportExcelBtn').addEventListener('click',exportFilteredExcel);
+
+/* ===== PDF للإحصائيات (طالب/جميع) ===== */
+function statsHtmlFor(uid){ const s=students.find(x=>x.uid===uid); const sum=summarize(uid); const recs=(loadRecords()[uid]||[]);
+  const logoImg = localStorage.getItem(LOGO_KEY);
+  const logoHtml = logoImg ? `<img src="${logoImg}" style="float:right;max-height:70px;max-width:140px;object-fit:contain;margin:6px 0 6px 12px" alt="شعار">` : '';
+  const rows = recs.map((r,i)=>{
+    const tag = r.type==='delay'?'tag-delay':(r.type==='absent'?'tag-absent':'tag-notice');
+    const m = r.minutes!=null? (r.minutes+' دقيقة') : '—';
+    return `<tr><td>${i+1}</td><td><span class="${tag}">${r.type==='delay'?'تأخر':(r.type==='absent'?'غياب':'رسالة عامة')}</span></td><td>${m}</td><td>${r.date}</td><td>${r.hijri}</td><td>${r.time}</td></tr>`;
+  }).join('') || `<tr><td colspan="6" style="text-align:center;color:#64748b">لا توجد سجلات بعد.</td></tr>`;
+  return `
+  <div style="page-break-inside:avoid;margin-bottom:18px">
+    <div>${logoHtml}<h2 style="text-align:center;margin:0">📊 إحصائية الطالب</h2></div>
+    <p style="text-align:center;margin:6px 0">الاسم: <b>${(s?.name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</b> — الصف: <b>${(s?.grade||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</b> — الفصل: <b>${(s?.class||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</b></p>
+    <div style="display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap">
+      <span class="chip">غياب: <b>${sum.absent}</b></span>
+      <span class="chip">تأخر: <b>${sum.delayMin}</b> دقيقة</span>
+      <span class="chip">آخر رسالة: <b>${sum.last? (sum.last.date+' - '+sum.last.time) : '—'}</b></span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-top:8px" border="1" cellspacing="0" cellpadding="6">
+      <thead style="background:#f7f7f7"><tr><th>#</th><th>النوع</th><th>التأخير</th><th>الميلادي</th><th>الهجري</th><th>الوقت</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+function openStatsPDFFor(uid){ const t=todayInfo(); const html=`<html dir="rtl"><head><meta charset="utf-8"><title>PDF_${uid}</title>
+  <style>body{font-family:Cairo,sans-serif;margin:20px}.chip{background:#f8fafc;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px}</style>
+  </head><body>${statsHtmlFor(uid)}</body></html>`; const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{w.print();}; }
+function openAllStatsPDF(){ const ids=getFiltered().map(s=>s.uid); if(!ids.length){alert('لا توجد بيانات');return} const blocks=ids.map(uid=>statsHtmlFor(uid)).join('<div style="page-break-after:always"></div>'); const html=`<html dir="rtl"><head><meta charset="utf-8"><title>PDF_All</title>
+  <style>body{font-family:Cairo,sans-serif;margin:20px}.chip{background:#f8fafc;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px} table{page-break-inside:auto} div{page-break-inside:avoid}</style>
+  </head><body>${blocks}</body></html>`; const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{w.print();}; }
+document.getElementById('exportAllPdfBtn').addEventListener('click', openAllStatsPDF);
+
+/* ===== نافذة إحصائيات تفاعلية مع فلاتر ===== */
+if(!document.getElementById('statsModal')){
+  const modal = document.createElement('div');
+  modal.id='statsModal'; modal.className='modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <span class="close" onclick="document.getElementById('statsModal').style.display='none'">&times;</span>
+      <div id="statsControls" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <select id="fltYear"></select>
+        <select id="fltMonth"></select>
+        <select id="fltType">
+          <option value="">كل الأنواع</option>
+          <option value="delay">تأخر</option>
+          <option value="absent">غياب</option>
+          <option value="notice">رسالة عامة</option>
+        </select>
+        <button class="btn" id="fltReset">♻️ مسح</button>
+        <div style="margin-inline-start:auto;display:flex;gap:6px">
+          <button class="btn" id="btnPrintStats">🖨 طباعة</button>
+          <button class="btn" id="btnPdfStats">📄 PDF</button>
+        </div>
+      </div>
+      <div id="statsDetails">...</div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function buildYearMonthOptions(recs){ const years=new Set(), months=new Set(); recs.forEach(r=>{ const m=r.date?.split('/')||[]; if(m.length>=3){ years.add(m[2].trim()); months.add(m[1].trim()); } }); const now=new Date(); const ySel=document.getElementById('fltYear'); const mSel=document.getElementById('fltMonth');
+  ySel.innerHTML = `<option value="">كل السنوات</option>` + [...years].sort().map(y=>`<option value="${y}">${y}</option>`).join('');
+  mSel.innerHTML = `<option value="">كل الشهور</option>` + [...months].sort((a,b)=>Number(a)-Number(b)).map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+function applyStatsFilter(list){ const y=document.getElementById('fltYear').value||''; const m=document.getElementById('fltMonth').value||''; const t=document.getElementById('fltType').value||''; return list.filter(r=>{ let ok=true; if(y){ ok = ok && (r.date?.endsWith(y)); } if(m){ ok = ok && (r.date?.split('/')?.[1]?.trim()===m); } if(t){ ok = ok && (r.type===t); } return ok; }); }
+
+function showStats(uid){ const s = students.find(x=>x.uid===uid); const name = s?.name || 'بدون اسم'; let recs = (loadRecords()[uid] || []); buildYearMonthOptions(recs); recs = applyStatsFilter(recs);
+  let totalAbsent = recs.filter(r=>r.type==='absent').length;
+  let totalDelayMin = recs.filter(r=>r.type==='delay').reduce((a,r)=>a+(r.minutes||0),0);
+  const h = Math.floor(totalDelayMin/60), m = totalDelayMin%60;
+  let rows = recs.map((r,i)=>{
+    const tag = r.type==='delay'?'tag-delay':(r.type==='absent'?'tag-absent':'tag-notice');
+    return `
+    <tr>
+      <td>${i+1}</td>
+      <td><span class="${tag}">${r.type==='delay'?'تأخر':(r.type==='absent'?'غياب':'رسالة عامة')}</span></td>
+      <td>${r.minutes!=null? (r.minutes+' دقيقة'): '—'}</td>
+      <td>${r.date}</td>
+      <td>${r.hijri}</td>
+      <td>${r.time}</td>
+      <td>
+        <button class="btn" onclick="editRecord('${uid}',${i})">✏ تعديل</button>
+        <button class="btn" onclick="deleteRecord('${uid}',${i})">🗑 حذف</button>
+      </td>
+    </tr>`;
+  }).join('');
+  if(!rows) rows = `<tr><td colspan="7" style="text-align:center;color:#64748b">لا توجد سجلات بعد.</td></tr>`;
+
+  const recAll = loadRecords()[uid]||[]; // لملخص عام
+  const sum = summarize(uid);
+  const alertChips = [];
+  if(sum.delayCount >= pro.thr.delay_alert) alertChips.push(`<span class="chip chip-warn">إنذار تأخر (${sum.delayCount})</span>`);
+  if(sum.absent >= pro.thr.absent_alert)   alertChips.push(`<span class="chip chip-warn">إنذار غياب (${sum.absent})</span>`);
+
+  const html = `
+    <div class="stats-header">
+      <h3>📊 إحصائيات: ${name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</h3>
+      <div class="stats-summary">
+        <div class="chip">غياب: <b>${sum.absent}</b> يوم</div>
+        <div class="chip">تأخر: <b>${Math.floor(sum.delayMin/60)}</b> ساعة و <b>${sum.delayMin%60}</b> دقيقة</div>
+        <div class="chip">إجمالي السجلات: <b>${recAll.length}</b></div>
+        ${alertChips.join(' ')}
+      </div>
+    </div>
+    <div style="margin:8px 0;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn" onclick="openStatsPDFFor('${uid}')">📄 استخراج الإحصائية PDF</button>
+    </div>
+    <table class="stats-table">
+      <thead><tr><th>#</th><th>النوع</th><th>التأخير</th><th>الميلادي</th><th>الهجري</th><th>الوقت</th><th>إجراء</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+  document.getElementById('statsDetails').innerHTML = html;
+  document.getElementById('statsModal').style.display='flex';
+
+  // ربط أزرار فلاتر الإحصاءات
+  document.getElementById('fltReset').onclick=()=>{ document.getElementById('fltYear').value=''; document.getElementById('fltMonth').value=''; document.getElementById('fltType').value=''; showStats(uid); };
+  document.getElementById('fltYear').onchange=()=>showStats(uid);
+  document.getElementById('fltMonth').onchange=()=>showStats(uid);
+  document.getElementById('fltType').onchange=()=>showStats(uid);
+  document.getElementById('btnPrintStats').onclick=()=>{ const w=window.open('','_blank'); w.document.write(`<html dir=rtl><head><meta charset=utf-8><style>body{font-family:Cairo,sans-serif;padding:20px}</style></head><body>${document.getElementById('statsDetails').innerHTML}</body></html>`); w.document.close(); w.print(); };
+  document.getElementById('btnPdfStats').onclick=()=>openStatsPDFFor(uid);
+}
+
+/* ===== إعداد وقت بداية الدوام ===== */
+(function ensureStartTimeSetting(){ const panel = document.getElementById('settingsPanel'); if(!panel) return; if(!document.getElementById('schoolStart')){ const wrap = document.createElement('div'); wrap.className='settings-group'; wrap.innerHTML = `
+      <label>⏰ وقت بداية الدوام (24h)</label>
+      <input id="schoolStart" type="time" value="07:15">
+      <div class="settings-note">يُستخدم لحساب دقائق التأخر تلقائيًا.</div>
+      <div><button class="btn" id="saveStartBtn">💾 حفظ وقت الدوام</button></div>`; panel.appendChild(wrap); }
+  const s = JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')||{}; const inp = document.getElementById('schoolStart'); if(inp){ inp.value = (s.schoolStart || '07:15'); }
+  document.getElementById('saveStartBtn')?.addEventListener('click', ()=>{ const s2 = JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')||{}; s2.schoolStart = document.getElementById('schoolStart').value || '07:15'; localStorage.setItem(SETTINGS_KEY, JSON.stringify(s2)); loadSettings(); alert('تم حفظ وقت بداية الدوام.'); });
+})();
+
+// التقاط إرسال روابط واتساب لتسجيل السجل تلقائيًا
+(function hookWindowOpen(){ const _open = window.open; window.open = function(url){ try{ const u = String(url||''); if(u.startsWith('https://wa.me/')){ let uid = null; try{ const phoneFromUrl = (new URL(u)).pathname.replace('/',''); uid = findUidByPhone(phoneFromUrl); }catch{} let tSel = (document.getElementById('templateSelect')?.value)||'custom'; let type = (tSel==='delay'?'delay':(tSel==='absent'?'absent':'notice')); addRecord(uid, type); } }catch{} return _open.apply(window, arguments); }})();
+
+/* ===== تهيئة ===== */
+function applyProUI(){ // إخفاء/إظهار أقسام
+  document.getElementById('addFormCard').classList.toggle('hidden', !!pro.collapseAddForm);
+  document.getElementById('waSection').classList.toggle('hidden', !!pro.hideWASection);
+}
+function init(){ loadSettings(); loadPro(); loadLS(); loadTemplates(); loadPE(); loadLogo(); refreshFiltersOptions(); applyProUI(); render(); applyTemplateToBox(); document.getElementById('templateSelect').addEventListener('change', applyTemplateToBox); }
+init();
+
+/*اخفاء*/
+// داخل دالة init() في الأسفل:
+function init() {
+    loadSettings();
+    loadPro();
+    loadLS();
+    loadTemplates();
+    loadPE();
+    loadLogo();
+    refreshFiltersOptions();
+    applyProUI();
+    render();
+    applyTemplateToBox();
+    
+    // ✅ إخفاء أي نافذة إحصائية عند التحميل
+    const statsModal = document.getElementById('statsModal');
+    if (statsModal) statsModal.style.display = 'none';
+}
+
+</script>
+</body>
+</html>
