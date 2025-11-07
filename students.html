@@ -462,7 +462,13 @@ function deleteByUid(u){const i=students.findIndex(x=>x.uid===u);if(i>-1){studen
 
 /* ===== Excel: قراءة وفق ترتيبك (اسم/جوال/هوية/صف/فصل) ===== */
 function normalizeHeadersRow(row){
-  return { name:String(row[0]??'').trim(), phone:String(row[1]??'').trim(), id:String(row[2]??'').trim(), grade:String(row[3]??'').trim(), class:String(row[4]??'').trim() };
+  return { 
+    name:String(row[0]??'').trim(), 
+    phone:String(row[1]??'').trim(), 
+    id:String(row[2]??'').trim(), 
+    grade:String(row[3]??'').trim(), 
+    class:String(row[4]??'').trim() 
+  };
 }
 document.getElementById('excelInput').addEventListener('change', async (e)=>{
   const file=e.target.files?.[0]; e.target.value='';
@@ -474,7 +480,7 @@ document.getElementById('excelInput').addEventListener('change', async (e)=>{
     const ws=wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws,{header:1,raw:false});
     const out=[]; for(let i=1;i<rows.length;i++){const r=rows[i]; if(!r||r.length===0) continue; const o=normalizeHeadersRow(r); if(!o.name) continue; out.push({uid:uid(),...o});}
-    if(!out.length){alert('تعذر قراءة البيانات. تأكد من ترتيب الأعمدة:  اسم الطالب | الجوال | رقم الهوية | الصف | الفصل');return}
+    if(!out.length){alert('تعذر قراءة البيانات. تأكد من ترتيب الأعمدة: اسم | الجوال | رقم الهوية | الصف | الفصل');return}
     students = out.concat(students); saveLS();
   };
   reader.readAsArrayBuffer(file);
@@ -540,7 +546,7 @@ document.getElementById('bulkWhatsAppBtn').addEventListener('click',()=>{
   });
 });
 document.getElementById('startAutoBtn').addEventListener('click',()=>{
-  const sel=getSelected();if(!sel.length){alert('اختر طلابًا أولاً.');return}
+  const sel=getSelected();if(!sel.length){alert('اختر طلابًا أولًا.');return}
   const tSel=$('#templateSelect').value;
   autoQueue=sel.map(s=>({url:waLink(s.phone,buildTemplate(tSel,s.name||'')),name:s.name||s.phone,uid:s.uid,type:(tSel==='delay'?'delay':(tSel==='absent'?'absent':'notice'))}));
   autoIndex=0;startAutoSending()
