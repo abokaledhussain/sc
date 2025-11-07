@@ -40,7 +40,6 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
 .badge-warn{display:inline-flex;align-items:center;gap:6px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:2px 8px;font-size:12px}
 
 /* الإعدادات (أكورديون) */
-/* ** تم التأكد من وجود overflow-y:auto هنا ** */
 .settings-panel{position:fixed;top:0;right:-420px;width:420px;height:100vh;background:#fff;box-shadow:-3px 0 14px rgba(0,0,0,.12);border-left:1px solid var(--border);transition:.3s;z-index:1000;padding:20px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
 .settings-panel.open{right:0}
 .settings-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
@@ -51,7 +50,7 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
 .accordion.open .acc-body{display:block}
 
 /* نافذة الإحصائيات */
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:center;align-items:center;z-index:2000} /* رفع الـ z-index */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:center;align-items:center}
 .modal-content{background:#fff;width:min(980px,94vw);max-height:86vh;overflow:auto;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
 .close{float:left;cursor:pointer;font-size:26px;color:#555}
 .stats-table{width:100%;border-collapse:collapse;margin-top:8px}
@@ -284,7 +283,7 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
   </div>
 
   <div class="accordion" id="acc-wa">
-    <div class="acc-head" onclick="toggleAcc('acc-wa')">💬 قوالب واتساب</div>
+    <div class="acc-head" onclick="toggleAcc('acc-wa')">💬 قوالب واتساب + أعمدة الطباعة</div>
     <div class="acc-body">
       <label>قالب تأخر الطالب</label><textarea id="tplDelay"></textarea>
       <label>قالب غياب الطالب</label><textarea id="tplAbsent"></textarea>
@@ -293,26 +292,19 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
         <button class="btn" id="saveTplBtn" style="background:var(--primary);color:#fff">💾 حفظ القوالب</button>
         <button class="btn" id="resetTplBtn">🔁 افتراضي</button>
       </div>
-    </div>
-  </div>
-  
-  <div class="accordion" id="acc-pe">
-    <div class="acc-head" onclick="toggleAcc('acc-pe')">🖨 أعمدة الطباعة/التصدير</div>
-    <div class="acc-body">
-      <label>حدد الأعمدة التي تريد طباعتها/تصديرها إلى Excel</label><br>
+      <hr>
+      <label>📄 أعمدة الطباعة/التصدير</label><br>
       <label><input type="checkbox" id="col_name" checked> اسم الطالب</label><br>
       <label><input type="checkbox" id="col_phone" checked> الجوال</label><br>
       <label><input type="checkbox" id="col_id" checked> رقم الهوية</label><br>
       <label><input type="checkbox" id="col_grade" checked> الصف</label><br>
       <label><input type="checkbox" id="col_class" checked> الفصل</label><br>
       <div class="grid-fit" style="margin-top:6px">
-        <button class="btn" id="savePEBtn" style="background:var(--ok);color:#fff">💾 حفظ التحديد</button>
+        <button class="btn" id="savePEBtn" style="background:var(--ok);color:#fff">💾 حفظ</button>
         <button class="btn" id="resetPEBtn">🔁 افتراضي</button>
       </div>
-      <div class="small">هذه الإعدادات تنطبق على **"طباعة"** و **"تصدير Excel"**.</div>
     </div>
   </div>
-  
 </div>
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.15);display:none;z-index:999" onclick="closeSettings()"></div>
 
@@ -524,7 +516,7 @@ document.getElementById('bulkWhatsAppBtn').addEventListener('click',()=>{
   sel.forEach(s=>{
     const msg=buildTemplate(tSel,s.name||'');
     const a=document.createElement('a');
-    a.className='btn bulk-wa'; a.style.padding='6px 9px'; a.style.background='var(--accent)'; a.style.color:'#003049';
+    a.className='btn bulk-wa'; a.style.padding='6px 9px'; a.style.background='var(--accent)'; a.style.color='#003049';
     a.target='_blank'; a.rel='noopener'; a.href=waLink(s.phone,msg); a.textContent=`واتساب: ${s.name||s.phone}`;
     a.dataset.uid=s.uid; a.dataset.type=(tSel==='delay'?'delay':(tSel==='absent'?'absent':'notice'));
     box.appendChild(a);
@@ -562,10 +554,10 @@ function stopAutoSending(manual){if(autoTimer){clearInterval(autoTimer);autoTime
 /* ===== ترويسة سادة للطباعة/PDF/Excel ===== */
 function loadHeaderData(){
   try{ const v=JSON.parse(localStorage.getItem(HDR_KEY)||'null'); if(v&&typeof v==='object'){ headerData={...headerData,...v}; } }catch{}
-  $('#hdr_country').value = headerData.country|| '';
-  $('#hdr_ministry').value = headerData.ministry|| '';
-  $('#hdr_directorate').value = headerData.directorate|| '';
-  $('#hdr_school').value = headerData.school|| '';
+  $('#hdr_country').value = headerData.country||'';
+  $('#hdr_ministry').value = headerData.ministry||'';
+  $('#hdr_directorate').value = headerData.directorate||'';
+  $('#hdr_school').value = headerData.school||'';
 }
 function saveHeaderData(){
   headerData={
@@ -604,7 +596,7 @@ function buildOfficialHeaderHTML(){
 function printTableOnly(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لطباعتها');return}
   const t=todayInfo(), grade=gradeFilter||'كل الصفوف', cls=classFilter||'كل الفصول';
-  const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للطباعة. يرجى التحديد من الإعدادات.');return}
+  const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للطباعة');return}
   const thead = `<tr><th>الرقم</th>${order.map(k=>`<th>${labels[k]}</th>`).join('')}</tr>`;
   const rows  = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
   const header = buildOfficialHeaderHTML();
@@ -623,7 +615,7 @@ document.getElementById('printBtn').addEventListener('click',printTableOnly);
 /* ===== تصدير Excel مع ترويسة سادة + التاريخ ===== */
 function exportFilteredExcel(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لتصديرها.');return}
-  const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للتصدير. يرجى التحديد من الإعدادات.');return}
+  const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للتصدير.');return}
   const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = s[k] || ''; }); return obj; });
 
   const ws = XLSX.utils.json_to_sheet(rows);
@@ -631,12 +623,10 @@ function exportFilteredExcel(){
   const headAoa = [
     [headerData.country||'', "", "", headerData.ministry||""],
     [headerData.directorate||"", "", "", headerData.school||""],
-    ["التاريخ:", `${t.hijri} الموافق ${t.miladi}`, "", ""],
-    [""]
+    ["التاريخ:", `${t.hijri} الموافق ${t.miladi}`, "", ""]
   ];
-  // استخدام index للتأكد من وضع البيانات فوق رأس الجدول
   XLSX.utils.sheet_add_aoa(ws, headAoa, {origin:"A1"});
-  const startRow = headAoa.length + 1;
+  const startRow = headAoa.length + 2;
   const ws2 = XLSX.utils.json_to_sheet(rows, {origin: {r:startRow-1, c:0}});
   Object.assign(ws, ws2);
 
@@ -645,13 +635,11 @@ function exportFilteredExcel(){
 }
 document.getElementById('exportExcelBtn').addEventListener('click',exportFilteredExcel);
 
-/* ===== PDF إحصائية طالب / الجميع (Clean HTML) ===== */
-// هذه الدالة تنشئ محتوى HTML نظيفًا (بدون أزرار) يستخدم في طباعة الكل
+/* ===== PDF إحصائية طالب / الجميع ===== */
 function statsHtmlFor(uid){
   const s=students.find(x=>x.uid===uid);
   const sum=summarize(uid);
-  let recs=(loadRecords()[uid]||[]);
-  recs.sort((a,b)=>(b.ts||0)-(a.ts||0)); // فرز للتأكد من الترتيب في PDF
+  const recs=(loadRecords()[uid]||[]);
   const header = buildOfficialHeaderHTML();
   const rows = recs.map((r,i)=>{
     const label = r.type==='delay'?'تأخر':(r.type==='absent'?'غياب':'رسالة عامة');
@@ -665,7 +653,7 @@ function statsHtmlFor(uid){
     <p style="text-align:center;margin:6px 0">الاسم: <b>${escapeHtml(s?.name||'')}</b> — الصف: <b>${escapeHtml(s?.grade||'')}</b> — الفصل: <b>${escapeHtml(s?.class||'')}</b></p>
     <div style="display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap">
       <span class="tag">غياب: <b>${sum.absent}</b></span>
-      <span class="tag">تأخر: <b>${sum.delayCount}</b> مرات (${sum.delayMin} دقيقة)</span>
+      <span class="tag">تأخر: <b>${sum.delayMin}</b> دقيقة</span>
       <span class="tag">آخر رسالة: <b>${sum.last? (sum.last.date+' - '+sum.last.time) : '—'}</b></span>
     </div>
     <table style="width:100%;border-collapse:collapse;margin-top:8px" border="1" cellspacing="0" cellpadding="6">
@@ -674,67 +662,12 @@ function statsHtmlFor(uid){
     </table>
   </div>`;
 }
-
-// ** New Function: Clean printing for single student stats (uses filtered data) **
-function printCleanStudentStats(uid, filteredRecs, totalAbsent, totalDelayCount, totalDelayMin) {
-    const s=students.find(x=>x.uid===uid);
-    const sum=summarize(uid); // الإحصائية الكلية (غير مفلترة)
-    const header = buildOfficialHeaderHTML();
-    
-    // Rows (clean, no actions) - using the *filtered* records passed from showStats
-    const rows = filteredRecs.map((r,i)=>{
-        const label = r.type==='delay'?'تأخر':(r.type==='absent'?'غياب':'رسالة عامة');
-        const m = r.minutes!=null? (r.minutes+' دقيقة') : '—';
-        return `<tr><td>${i+1}</td><td>${label}</td><td>${m}</td><td>${r.date}</td><td>${r.hijri||''}</td><td>${r.time||''}</td></tr>`;
-    }).join('') || `<tr><td colspan="6" style="text-align:center;color:#64748b">لا توجد سجلات بعد.</td></tr>`;
-
-    // Stats HTML for printing 
-    const statsHtml = `
-    <div style="page-break-inside:avoid;margin-bottom:18px">
-      ${header}
-      <h3 style="text-align:center;margin:6px 0">📊 إحصائية الطالب</h3>
-      <p style="text-align:center;margin:6px 0">الاسم: <b>${escapeHtml(s?.name||'')}</b> — الصف: <b>${escapeHtml(s?.grade||'')}</b> — الفصل: <b>${escapeHtml(s?.class||'')}</b></p>
-      <div style="display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap">
-        <span class="tag">غياب (مُفلتر): <b>${totalAbsent}</b></span>
-        <span class="tag">تأخر (مُفلتر): <b>${totalDelayCount}</b> مرات (${totalDelayMin} دقيقة)</span>
-        <span class="tag">إجمالي التأخر (بشكل عام): <b>${sum.delayCount}</b> مرات (${sum.delayMin} دقيقة)</span>
-      </div>
-      <table style="width:100%;border-collapse:collapse;margin-top:8px" border="1" cellspacing="0" cellpadding="6">
-        <thead style="background:#f7f7f7"><tr><th>#</th><th>النوع</th><th>التأخير</th><th>الميلادي</th><th>الهجري</th><th>الوقت</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
-
-    const html=`<html dir="rtl"><head><meta charset="utf-8"><title>PDF_${uid}</title>
-    <style>
-        body{font-family:Cairo,sans-serif;margin:20px}
-        .tag{background:#f8fafc;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px; display:inline-block; margin:2px}
-        .header-plain{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px} 
-        .header-date{text-align:center;margin:6px 0 10px}
-        table{width:100%;border-collapse:collapse;margin-top:8px}
-        th, td{border:1px solid #000;padding:6px;font-size:14px; text-align:center}
-        th{background:#f0f0f0}
-    </style>
-    </head><body>${statsHtml}</body></html>`;
-    const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{w.print();};
-}
-
-function openAllStatsPDF(){ 
-  const ids=getFiltered().map(s=>s.uid); if(!ids.length){alert('لا توجد بيانات');return} 
-  const blocks=ids.map(uid=>statsHtmlFor(uid)).join('<div style="page-break-after:always"></div>'); 
-  const html=`<html dir="rtl"><head><meta charset="utf-8"><title>PDF_All</title>
-  <style>
-    body{font-family:Cairo,sans-serif;margin:20px}
-    .tag{background:#f8fafc;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px; display:inline-block; margin:2px}
-    .header-plain{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px} 
-    .header-date{text-align:center;margin:6px 0 10px}
-    table{width:100%;border-collapse:collapse;margin-top:8px}
-    th, td{border:1px solid #000;padding:6px;font-size:14px; text-align:center}
-    th{background:#f0f0f0}
-  </style>
-  </head><body>${blocks}</body></html>`; 
-  const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{w.print();}; 
-}
+function openStatsPDFFor(uid){ const html=`<html dir="rtl"><head><meta charset="utf-8"><title>PDF_${uid}</title>
+  <style>body{font-family:Cairo,sans-serif;margin:20px}.tag{background:#f8fafc;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px}.header-plain{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px} .header-date{text-align:center;margin:6px 0 10px}</style>
+  </head><body>${statsHtmlFor(uid)}</body></html>`; const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{w.print();}; }
+function openAllStatsPDF(){ const ids=getFiltered().map(s=>s.uid); if(!ids.length){alert('لا توجد بيانات');return} const blocks=ids.map(uid=>statsHtmlFor(uid)).join('<div style="page-break-after:always"></div>'); const html=`<html dir="rtl"><head><meta charset="utf-8"><title>PDF_All</title>
+  <style>body{font-family:Cairo,sans-serif;margin:20px}.tag{background:#f8fafc;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px}.header-plain{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px} .header-date{text-align:center;margin:6px 0 10px}</style>
+  </head><body>${blocks}</body></html>`; const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{w.print();}; }
 document.getElementById('exportAllPdfBtn').addEventListener('click', openAllStatsPDF);
 
 /* ===== نافذة الإحصائيات + إضافة سجل سابق يدوي ===== */
@@ -774,45 +707,23 @@ if(!document.getElementById('statsModal')){
 }
 
 let currentStatsUid=null;
-let editingRecordId=null;
+let editingRecordId=null; // <--- **المتغير الجديد لتتبع السجل قيد التعديل**
 
-function applyStatsFilter(list){ const y=$('#fltYear').value||''; const m=$('#fltMonth').value||''; const t=$('#fltType').value||''; return list.filter(r=>{ let ok=true; if(y){ ok = ok && r.date?.endsWith(y); } if(m){ 
-    // التأكد من أن الشهر في صيغة DD / MM / YYYY
-    const parts = r.date?.split('/')?.map(p => p.trim());
-    ok = ok && (parts?.[1] === String(m).padStart(2, '0'));
-  } if(t){ ok = ok && (r.type===t); } return ok; }); }
-
+function applyStatsFilter(list){ const y=$('#fltYear').value||''; const m=$('#fltMonth').value||''; const t=$('#fltType').value||''; return list.filter(r=>{ let ok=true; if(y){ ok = ok && r.date?.endsWith(y); } if(m){ ok = ok && (r.date?.split('/')?.[1]?.trim()===(String(m).padStart(2,'0'))); } if(t){ ok = ok && (r.type===t); } return ok; }); }
 function showStats(uid){
   currentStatsUid = uid;
-  editingRecordId = null;
-  
-  // إعادة تعيين نموذج الإضافة/التعديل وحالة الزر
-  $('#ar_save').textContent = 'حفظ السجل';
-  $('#btnAddRecord').textContent = '➕ إضافة سجل سابق';
-  $('#addRecForm').classList.add('hidden'); 
-  
-  // إعادة ربط وظيفة زر الإضافة
-  $('#btnAddRecord').onclick=()=>{
-    editingRecordId = null;
-    $('#ar_save').textContent = 'حفظ السجل';
-    $('#ar_type').value = 'delay';
-    $('#ar_date').value = '';
-    $('#ar_time').value = '';
-    $('#ar_minutes').value = '';
-    $('#addRecForm').classList.toggle('hidden');
-  };
+  editingRecordId = null; // إعادة تعيين وضع التعديل عند فتح النافذة
+  $('#ar_save').textContent = 'حفظ السجل'; // إعادة تعيين زر الحفظ
+  $('#addRecForm').classList.add('hidden'); // إخفاء نموذج الإضافة افتراضياً
 
   const s = students.find(x=>x.uid===uid); const name=s?.name||'بدون اسم';
   let recs = (loadRecords()[uid] || []);
-  // ** التعديل: فرز السجلات لكي تظهر الأحدث أولاً **
-  recs.sort((a,b)=>(b.ts||0)-(a.ts||0)); 
-  const filteredRecs = applyStatsFilter(recs);
-  let totalAbsent = filteredRecs.filter(r=>r.type==='absent').length;
-  let totalDelayCount = filteredRecs.filter(r=>r.type==='delay').length;
-  let totalDelayMin = filteredRecs.filter(r=>r.type==='delay').reduce((a,r)=>a+(r.minutes||0),0);
+  recs = applyStatsFilter(recs);
+  let totalAbsent = recs.filter(r=>r.type==='absent').length;
+  let totalDelayMin = recs.filter(r=>r.type==='delay').reduce((a,r)=>a+(r.minutes||0),0);
   
-  // يتم إنشاء جدول النافذة مع عمود الإجراءات هنا
-  const rows = filteredRecs.map((r,i)=>`
+  // الكود المعدل لعرض السجلات مع أزرار الإجراءات
+  const rows = recs.map((r,i)=>`
     <tr>
       <td>${i+1}</td>
       <td>${r.type==='delay'?'تأخر':(r.type==='absent'?'غياب':'رسالة عامة')}</td>
@@ -826,19 +737,19 @@ function showStats(uid){
           <button class="btn btn-sm" style="padding:4px 8px;background:var(--warn);color:#fff" onclick="deleteRecord('${r.id}')">🗑️</button>
         </div>
       </td>
-    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#64748b">لا توجد سجلات.</td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#64748b">لا توجد سجلات.</td></tr>`; // colspan changed to 7
     
   const html = `
     <div class="stats-header">
       <h3>📊 إحصائيات: ${escapeHtml(name)}</h3>
       <div class="tag">غياب: <b>${totalAbsent}</b></div>
-      <div class="tag">تأخر: <b>${totalDelayCount}</b> مرات (${totalDelayMin} دقيقة)</div>
+      <div class="tag">تأخر: <b>${totalDelayMin}</b> دقيقة</div>
       <div style="margin:8px 0">
-        </div>
+        <button class="btn" onclick="openStatsPDFFor('${uid}')">📄 استخراج PDF</button>
+      </div>
     </div>
     <table class="stats-table">
-      <thead><tr><th>#</th><th>النوع</th><th>التأخير</th><th>الميلادي</th><th>الهجري</th><th>الوقت</th><th>إجراءات</th></tr></thead>
-      <tbody>${rows}</tbody>
+      <thead><tr><th>#</th><th>النوع</th><th>التأخير</th><th>الميلادي</th><th>الهجري</th><th>الوقت</th><th>إجراءات</th></tr></thead> <tbody>${rows}</tbody>
     </table>`;
   $('#statsDetails').innerHTML = html;
   $('#statsModal').style.display='flex';
@@ -848,10 +759,19 @@ function showStats(uid){
   $('#fltType').onchange=()=>showStats(uid);
   $('#fltYear').oninput=()=>showStats(uid);
   $('#fltMonth').oninput=()=>showStats(uid);
+  $('#btnPrintStats').onclick=()=>{ const w=window.open('','_blank'); w.document.write(`<html dir=rtl><head><meta charset=utf-8><style>body{font-family:Cairo,sans-serif;padding:20px}</style></head><body>${$('#statsDetails').innerHTML}</body></html>`); w.document.close(); w.print(); };
+  $('#btnPdfStats').onclick=()=>openStatsPDFFor(uid);
   
-  // ** التعديل: استخدام الدالة النظيفة للطباعة مع تمرير السجلات المفلترة **
-  $('#btnPrintStats').onclick=()=>printCleanStudentStats(uid, filteredRecs, totalAbsent, totalDelayCount, totalDelayMin);
-  $('#btnPdfStats').onclick=()=>printCleanStudentStats(uid, filteredRecs, totalAbsent, totalDelayCount, totalDelayMin);
+  // زر إظهار نموذج الإضافة
+  $('#btnAddRecord').onclick=()=>{
+    editingRecordId = null;
+    $('#ar_save').textContent = 'حفظ السجل';
+    $('#ar_type').value = 'delay';
+    $('#ar_date').value = '';
+    $('#ar_time').value = '';
+    $('#ar_minutes').value = '';
+    $('#addRecForm').classList.toggle('hidden');
+  };
   
   // الكود المعدل لحفظ/تحديث السجل
   $('#ar_save').onclick=()=>{
@@ -862,13 +782,10 @@ function showStats(uid){
     
     // حساب التاريخ والتوقيت الهجري
     const dt = new Date(`${d}T${t||'07:30'}:00`);
-    const dateMiladi = String(dt.getDate()).padStart(2,'0')+' / '+String(dt.getMonth()+1).padStart(2,'0')+' / '+dt.getFullYear();
-    const timeOfDay = String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
-    
     const hijriTxt = (()=>{try{const p=new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(dt);return `${p.find(x=>x.type==='day')?.value} / ${p.find(x=>x.type==='month')?.value} / ${p.find(x=>x.type==='year')?.value}هـ`}catch{return''}})();
     
     // إعداد بيانات السجل
-    const recData={type,minutes:(type==='delay'?Math.max(0,mins):null),date: dateMiladi,hijri:hijriTxt,time: timeOfDay,ts: dt.getTime()};
+    const recData={type,minutes:(type==='delay'?Math.max(0,mins):null),date: String(dt.getDate()).padStart(2,'0')+' / '+String(dt.getMonth()+1).padStart(2,'0')+' / '+dt.getFullYear(),hijri:hijriTxt,time: String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'),ts: dt.getTime()};
     
     const all=loadRecords(); 
     if(!all[currentStatsUid]) all[currentStatsUid]=[]; 
@@ -877,7 +794,6 @@ function showStats(uid){
       // وضع التعديل (Edit Mode)
       const recIndex = all[currentStatsUid].findIndex(r => r.id === editingRecordId);
       if(recIndex > -1){
-        // ** ملاحظة: لا نغير الـ ID هنا **
         all[currentStatsUid][recIndex] = {...all[currentStatsUid][recIndex], ...recData};
       }
       editingRecordId = null; // إنهاء وضع التعديل
@@ -888,26 +804,12 @@ function showStats(uid){
     }
     
     saveRecords(all);
-    // إخفاء النموذج بعد الحفظ/التحديث
     $('#addRecForm').classList.add('hidden'); 
-    
-    // إعادة تعيين زر الإضافة لوظيفته الأصلية بعد الحفظ/التحديث
-    $('#btnAddRecord').textContent = '➕ إضافة سجل سابق';
-    $('#btnAddRecord').onclick=()=>{
-        editingRecordId = null;
-        $('#ar_save').textContent = 'حفظ السجل';
-        $('#ar_type').value = 'delay';
-        $('#ar_date').value = '';
-        $('#ar_time').value = '';
-        $('#ar_minutes').value = '';
-        $('#addRecForm').classList.toggle('hidden');
-    };
-    
     showStats(currentStatsUid);
   };
 }
 
-/* ===== دوال تعديل وحذف سجل الحضور (مصححة) ===== */
+/* ===== دوال تعديل وحذف سجل الحضور (جديدة) ===== */
 function deleteRecord(recId){
   if(!currentStatsUid || !recId) return;
   if(!confirm('هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.')) return;
@@ -915,21 +817,9 @@ function deleteRecord(recId){
   const all=loadRecords();
   if(!all[currentStatsUid]) return;
 
-  // الحذف من مصفوفة سجلات الطالب
   all[currentStatsUid] = all[currentStatsUid].filter(r => r.id !== recId);
-  
-  // حفظ التغييرات
   saveRecords(all);
-  
-  // إخفاء نموذج الإضافة/التعديل في حال كان السجل المحذوف قيد التعديل
-  if(editingRecordId === recId){
-    editingRecordId = null;
-    $('#addRecForm').classList.add('hidden');
-    $('#ar_save').textContent = 'حفظ السجل';
-  }
-  
-  // إعادة عرض الإحصائيات المحدثة
-  showStats(currentStatsUid); 
+  showStats(currentStatsUid); // إعادة عرض الإحصائيات المحدثة
 }
 
 function editRecord(recId){
@@ -941,37 +831,26 @@ function editRecord(recId){
   // إظهار نموذج الإضافة/التعديل
   $('#addRecForm').classList.remove('hidden');
 
-  // ** التصحيح: تحويل التاريخ من صيغة "DD / MM / YYYY" إلى "YYYY-MM-DD" **
+  // تحويل التاريخ من صيغة "DD / MM / YYYY" إلى "YYYY-MM-DD" المطلوبة لـ <input type="date">
   const dateParts = rec.date.split(' / ').map(p => p.trim());
   const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
 
   // ملء النموذج ببيانات السجل
   $('#ar_type').value = rec.type;
   $('#ar_date').value = formattedDate;
-  // ** التصحيح: استخدام أول 5 أحرف (HH:MM) لوقت الإدخال (24 ساعة) **
+  // استخدام أول 5 أحرف (HH:MM) لوقت الإدخال (24 ساعة)
   $('#ar_time').value = rec.time.slice(0, 5); 
   $('#ar_minutes').value = rec.minutes || 0;
   
   // تحديث حالة التعديل
   editingRecordId = recId;
   $('#ar_save').textContent = 'تحديث السجل';
-  
-  // تحديث زر الإضافة إلى زر إلغاء التعديل
+  // التأكد من أن العنوان في وضع التعديل/الإضافة لتمكين الإلغاء
   $('#btnAddRecord').textContent = '❌ إلغاء التعديل'; 
   $('#btnAddRecord').onclick = () => {
       editingRecordId = null;
       $('#ar_save').textContent = 'حفظ السجل';
-      // إعادة تعيين زر الإضافة لوظيفته الأصلية
       $('#btnAddRecord').textContent = '➕ إضافة سجل سابق';
-      $('#btnAddRecord').onclick=()=>{
-        editingRecordId = null;
-        $('#ar_save').textContent = 'حفظ السجل';
-        $('#ar_type').value = 'delay';
-        $('#ar_date').value = '';
-        $('#ar_time').value = '';
-        $('#ar_minutes').value = '';
-        $('#addRecForm').classList.toggle('hidden');
-      };
       $('#addRecForm').classList.add('hidden');
   };
   window.scrollTo({top:0,behavior:'smooth'}) // الانتقال لأعلى النافذة
