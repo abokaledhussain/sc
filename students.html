@@ -718,38 +718,125 @@ function clearForm(){editingUid=null;fillForm({});$('#formTitle').textContent='�
 function submitForm(){const s={name:$('#f_name').value.trim(),phone:$('#f_phone').value.trim(),id:$('#f_id').value.trim(),grade:$('#f_grade').value.trim(),class:$('#f_class').value.trim()};if(!s.name){alert('يرجى إدخال اسم الطالب');return}if(editingUid){const i=students.findIndex(x=>x.uid===editingUid);if(i>-1)students[i]={...students[i],...s}}else students.unshift({uid:uid(),...s});saveLS();clearForm()}
 function deleteByUid(u){const i=students.findIndex(x=>x.uid===u);if(i>-1){students.splice(i,1);saveLS()}}
 
-/* ===== Excel: قراءة وفق ترتيبك (اسم/جوال/هوية/صف/فصل) ===== */
-function normalizeHeadersRow(row){
-  return { name:String(row[0]??'').trim(), phone:String(row[1]??'').trim(), id:String(row[2]??'').trim(), grade:String(row[3]??'').trim(), class:String(row[4]??'').trim() };
-}
-document.getElementById('excelInput').addEventListener('change', async (e)=>{
-  const file=e.target.files?.[0]; e.target.value='';
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=(ev)=>{
-    const data=new Uint8Array(ev.target.result);
-    const wb=XLSX.read(data,{type:'array'});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws,{header:1,raw:false});
-    const out=[]; for(let i=1;i<rows.length;i++){const r=rows[i]; if(!r||r.length===0) continue; const o=normalizeHeadersRow(r); if(!o.name) continue; out.push({uid:uid(),...o});}
-    if(!out.length){alert('تعذر قراءة البيانات. تأكد من ترتيب الأعمدة: اسم | الجوال | رقم الهوية | الصف | الفصل');return}
-    students = out.concat(students); saveLS();
+/* ✅✅ [BEGIN] استيراد Excel + تحويل رقم الصف إلى اسم الصف */
+document.getElementById('excelInput').addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const data = new Uint8Array(ev.target.result);
+    const wb = XLSX.read(data, { type: 'array' });
+
+    // ✅ تحديد الورقة (عادة الثانية في ملفات نور)
+    let ws = wb.Sheets[wb.SheetNames[1]] || wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+    // ✅ الصف الخامس يحتوي العناوين
+    const headerRowIndex = 3;
+    const headerRow = rows[headerRowIndex].map(h => String(h || '').trim());
+
+    // ✅ تطابق الأعمدة حسب الاسم
+    const col = {
+      phone: headerRow.findIndex(h => /الجوال/i.test(h)),
+      class: headerRow.findIndex(h => /الفصل/i.test(h)),
+      grade: headerRow.findIndex(h => /الصف/i.test(h)),  // هنا رقم الصف (1314، 1416..)
+      name:  headerRow.findIndex(h => /اسم الطالب/i.test(h)),
+      id:    headerRow.findIndex(h => /رقم الطالب|الهوية/i.test(h))
+    };
+
+    // ✅ تحويل أكواد الصفوف إلى أسماء
+    function convertGrade(code) {
+      code = String(code).trim();
+      if (code === "1314") return "الأول الثانوي";
+      if (code === "1416") return "الثاني الثانوي";
+      if (code === "1516") return "الثالث الثانوي";
+      return code; // إذا لم يكن من ضمن الأكواد، يظل كما هو
+    }
+
+    let imported = [];
+    for (let i = headerRowIndex + 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r.length) continue;
+
+      const s = {
+        uid: uid(),
+        name:  col.name  >= 0 ? (r[col.name]  || '').toString().trim() : '',
+        phone: col.phone >= 0 ? (r[col.phone] || '').toString().trim() : '',
+        id:    col.id    >= 0 ? (r[col.id]    || '').toString().trim() : '',
+        grade: col.grade >= 0 ? convertGrade(r[col.grade]) : '', // ✅ التحويل هنا
+        class: col.class >= 0 ? (r[col.class] || '').toString().trim() : ''
+      };
+
+      if (s.name) imported.push(s);
+    }
+
+    if (!imported.length) {
+      alert('⚠️ لا توجد بيانات طلاب بعد الصف الخامس');
+      return;
+    }
+
+    students = imported.concat(students);
+    saveLS();
+    alert('✅ تم استيراد ' + imported.length + ' طالب مع تحويل الصفوف ✅');
   };
+
   reader.readAsArrayBuffer(file);
 });
+/* ✅✅ [END] استيراد Excel + تحويل رقم الصف إلى اسم الصف */
 
-/* استعادة/نسخ احتياطي JSON */
+/* ✅✅ [BEGIN] استعادة النسخة مع الإحصائيات */
 document.getElementById('restoreInput').addEventListener('change',(e)=>{
-  const f=e.target.files?.[0]; e.target.value='';
+  const f = e.target.files?.[0]; 
+  e.target.value='';
   if(!f) return;
-  const rd=new FileReader();
-  rd.onload=()=>{ try{ const obj=JSON.parse(rd.result||'[]'); if(Array.isArray(obj)){ students=obj; saveLS(); alert('تمت الاستعادة.'); } else alert('ملف غير صالح'); }catch{alert('ملف غير صالح')} };
+
+  const rd = new FileReader();
+  rd.onload = () => { 
+    try { 
+      const data = JSON.parse(rd.result || '{}');
+
+      if (Array.isArray(data)) {
+        // نسخة قديمة تحتوي فقط على الطلاب
+        students = data;
+      } else if (data.students) {
+        // نسخة حديثة تحتوي على الطلاب + الإحصائيات
+        students = data.students;
+        if (data.records) {
+          localStorage.setItem(REC_KEY, JSON.stringify(data.records));
+        }
+      } else {
+        alert('⚠️ ملف النسخة غير صالح');
+        return;
+      }
+
+      saveLS();
+      render();
+      alert('✅ تمت استعادة البيانات بنجاح');
+
+    } catch {
+      alert('⚠️ لا يمكن قراءة الملف (JSON غير صالح)');
+    }
+  };
   rd.readAsText(f);
 });
+/* ✅✅ [END] استعادة النسخة مع الإحصائيات */
+
+/* ✅✅ [BEGIN] النسخ الاحتياطي يشمل الطلاب + الإحصائيات */
 document.getElementById('exportBtn').addEventListener('click',()=>{
-  const blob=new Blob([JSON.stringify(students,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='students_backup.json'; a.click(); URL.revokeObjectURL(a.href);
+  const backupData = {
+    students: students,
+    records: loadRecords()   // ← هذا يحفظ سجلات الغياب والتأخر
+  };
+  const blob = new Blob([JSON.stringify(backupData,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'students_backup.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
 });
+/* ✅✅ [END] النسخ الاحتياطي يشمل الطلاب + الإحصائيات */
 
 /* ===== أحداث عامة ===== */
 document.getElementById('saveBtn').addEventListener('click',submitForm);
