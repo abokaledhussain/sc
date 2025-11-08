@@ -2,69 +2,246 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>📘 كشوفات الطلاب - ثانوية الأمير عبدالمجيد الأولى (Pro)</title>
 
+<!-- ✅ خطوط -->
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- ✅ مكتبة Excel -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-:root{--primary:#1f5fa6;--primary-700:#174b83;--accent:#0ea5e9;--bg:#f2f4f8;--card:#fff;--muted:#6b7280;--ok:#16a34a;--warn:#ef4444;--border:#e5e7eb;--delay:#f59e0b}
-*{box-sizing:border-box} html,body{overflow-x:hidden}
-body{margin:0;background:var(--bg);font-family:Cairo,sans-serif;color:#111}
-.container{max-width:1100px;margin:24px auto;padding:0 16px}
-header{position:relative;background:linear-gradient(135deg,var(--primary),var(--primary-700));color:#fff;border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-header h1{margin:0;font-size:22px;line-height:1.4}
-header p{margin:6px 0 0;color:#e2e8f0;font-size:13px;line-height:1.6}
-#schoolLogo{max-height:64px;max-width:120px;object-fit:contain}
-.logo-wrap{display:flex;align-items:center;gap:8px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:12px}
-.toolbar,.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.btn{border:1px solid var(--border);border-radius:10px;background:#fff;padding:8px 12px;cursor:pointer}
-.btn:disabled{opacity:.6;cursor:not-allowed}
-input,select,textarea{width:100%;padding:9px;border:1px solid var(--border);border-radius:10px}
-textarea{min-height:110px}
-.small{color:var(--muted);font-size:12px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid-fit{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
-.table-card{overflow:auto;border-radius:14px}
-table{width:100%;border-collapse:separate;border-spacing:0}
-thead th{background:#eff6ff;padding:10px;border-bottom:1px solid var(--border);text-align:right;position:sticky;top:0}
-tbody td{padding:10px;border-bottom:1px solid var(--border)}
-.mono{font-family:ui-monospace,monospace}
-.nowrap{white-space:nowrap}
-.hidden{display:none}
-.tag{border-radius:999px;padding:2px 8px;font-size:12px}
-.row-meta{display:flex;flex-direction:column;gap:4px}
-.meta-line{font-size:12px;color:#334155}
-.badge-warn{display:inline-flex;align-items:center;gap:6px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:2px 8px;font-size:12px}
+:root {
+  --primary:#1f5fa6;
+  --primary-700:#174b83;
+  --accent:#0ea5e9;
+  --bg:#f2f4f8;
+  --card:#fff;
+  --muted:#6b7280;
+  --ok:#16a34a;
+  --warn:#ef4444;
+  --border:#e5e7eb;
+  --delay:#f59e0b;
+}
 
-/* الإعدادات (أكورديون) */
-.settings-panel{position:fixed;top:0;right:-420px;width:420px;height:100vh;background:#fff;box-shadow:-3px 0 14px rgba(0,0,0,.12);border-left:1px solid var(--border);transition:.3s;z-index:1000;padding:20px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
-.settings-panel.open{right:0}
-.settings-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.close-settings{cursor:pointer;background:none;border:none;font-size:20px;color:#666}
-.accordion{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}
-.acc-head{padding:12px 14px;background:#f8fafc;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px}
-.acc-body{padding:12px 14px;display:none}
-.accordion.open .acc-body{display:block}
+* {box-sizing:border-box}
+html, body {overflow-x:hidden}
+body {
+  margin:0;
+  background:var(--bg);
+  font-family:Cairo, sans-serif;
+  color:#111;
+}
 
-/* نافذة الإحصائيات */
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:center;align-items:center}
-.modal-content{background:#fff;width:min(980px,94vw);max-height:86vh;overflow:auto;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
-.close{float:left;cursor:pointer;font-size:26px;color:#555}
-.stats-table{width:100%;border-collapse:collapse;margin-top:8px}
-.stats-table th,.stats-table td{border:1px solid #e5e7eb;padding:8px;text-align:center}
-.stats-table th{background:#f1f5f9}
+.container {max-width:1100px; margin:24px auto; padding:0 16px}
+
+/* ✅ رأس الصفحة */
+header {
+  position:relative;
+  background:linear-gradient(135deg, var(--primary), var(--primary-700));
+  color:#fff;
+  border-radius:16px;
+  padding:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+header h1 {margin:0; font-size:22px; line-height:1.4}
+header p {margin:6px 0 0; color:#e2e8f0; font-size:13px; line-height:1.6}
+#schoolLogo {max-height:64px; max-width:120px; object-fit:contain}
+.logo-wrap {display:flex; align-items:center; gap:8px}
+
+/* ✅ البطاقات */
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+  margin-top:12px;
+}
+
+.toolbar, .filters {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+
+.btn {
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+  padding:8px 12px;
+  cursor:pointer;
+}
+
+.btn:disabled {opacity:.6; cursor:not-allowed}
+
+input, select, textarea {
+  width:100%;
+  padding:9px;
+  border:1px solid var(--border);
+  border-radius:10px;
+}
+
+textarea {min-height:110px}
+.small {color:var(--muted); font-size:12px}
+.grid-2 {display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.grid-fit {display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:8px}
+
+/* ✅ جدول الطلاب */
+.table-card {overflow:auto; border-radius:14px}
+table {width:100%; border-collapse:separate; border-spacing:0}
+thead th {
+  background:#eff6ff;
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:right;
+  position:sticky;
+  top:0;
+}
+tbody td {padding:10px; border-bottom:1px solid var(--border)}
+
+.hidden {display:none}
+.nowrap {white-space:nowrap}
+.tag {border-radius:999px; padding:2px 8px; font-size:12px}
+.badge-warn {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fed7aa;
+  border-radius:999px;
+  padding:2px 8px;
+  font-size:12px;
+}
+
+/* ✅ لوحة الإعدادات (Accordion + Panel) */
+.settings-panel {
+  position:absolute;
+  top:0;
+  right:-420px;
+  width:420px;
+  min-height:100vh;
+  background:#fff;
+  box-shadow:-3px 0 14px rgba(0,0,0,.12);
+  border-left:1px solid var(--border);
+  transition:.3s;
+  z-index:1000;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.settings-panel.open {right:0}
+
+.settings-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:4px;
+}
+.close-settings {
+  cursor:pointer;
+  background:none;
+  border:none;
+  font-size:20px;
+  color:#666;
+}
+
+/* ✅ Accordion */
+.accordion {border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff}
+.acc-head {
+  padding:12px 14px;
+  background:#f8fafc;
+  cursor:pointer;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.acc-body {padding:12px 14px; display:none}
+.accordion.open .acc-body {display:block}
+.scrollable-acc-content {
+  overflow-y:auto;
+  max-height:60vh;
+  padding-inline-end:10px;
+}
+
+/* ✅ ترويسة الطباعة البسيطة */
+.header-plain {
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.header-plain .col {line-height:1.4; font-weight:700}
+.header-plain .col.center {display:flex; justify-content:center}
+.header-date {text-align:center; font-size:13px; margin-bottom:8px}
+/* ✅ تكملة التنسيقات */
+#btnPrintStats { display:none !important; }
+
 /* معاينات */
 .logo-preview{display:flex;align-items:center;gap:10px}
 .logo-preview img{max-height:56px;max-width:140px;border:1px dashed var(--border);padding:6px;border-radius:8px;background:#fafafa}
 
-/* ترويسة سادة للطباعة/المعاينة */
-.header-plain{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.header-plain .col{line-height:1.5;font-weight:700}
-.header-plain .col.center{display:flex;align-items:center;justify-content:center}
-.header-date{margin:6px 0 10px;text-align:center;font-size:13px;color:#111}
+/* نوافذ مودال عامة */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:center;align-items:center}
+.modal-content{background:#fff;width:min(980px,94vw);max-height:86vh;overflow:auto;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.close{float:left;cursor:pointer;font-size:26px;color:#555}
+
+/* ملاحظة: هوامش الطباعة الديناميكية تُحقن عبر نافذة الطباعة من JS */
+@page { size:A4; margin:8mm; }
+/* أيقونات صغيرة بدون خلفية */
+.icon-btn {
+  background: transparent;   /* بدون خلفية */
+  border: none;              /* بدون حدود */
+  padding: 4px;              /* مسافة داخلية صغيرة */
+  margin: 0 2px;
+  font-size: 18px;          /* حجم الأيقونة - غيّره حسب الرغبة */
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: inherit;           /* يرث لون النص */
+}
+
+/* منع تأثير الزر .btn العام إذا موجود: */
+.icon-btn.btn { background: transparent; border: none; }
+
+/* تلميح مرئي لطيف عند المرور (اختياري) — إذا لا تريد أي خلفية عند hover شيله */
+.icon-btn:hover {
+  background: rgba(0,0,0,0.04);
+  border-radius: 6px;
+}
+
+/* تركيز لوحة المفاتيح واضح للوصولية */
+.icon-btn:focus {
+  outline: 2px solid rgba(0,0,0,0.12);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* حالة الأيقونة الصغيرة (مثلاً دائرة حالة خضراء بدون خلفية) */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* إذا تريد أن تجعل الرموز أصغر جدًا (مثلاً في جدول) */
+.icon-small { font-size: 14px; padding: 2px; }
+
 </style>
 </head>
 <body>
@@ -80,6 +257,7 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
     </div>
   </header>
 
+  <!-- شريط الأدوات -->
   <div class="card">
     <div class="toolbar">
       <label class="btn" style="background:var(--primary);color:#fff;border-color:transparent">
@@ -95,13 +273,16 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
       <button class="btn" id="exportBtn">💾 تنزيل نسخة احتياطية</button>
       <button class="btn" id="clearBtn">🧹 تفريغ التخزين</button>
 
-      <div style="flex:1;min-width:240px"><input id="searchBox" type="text" placeholder="🔎 بحث بالاسم أو رقم الهوية..."></div>
+      <div style="flex:1;min-width:240px">
+        <input id="searchBox" type="text" placeholder="🔎 بحث بالاسم أو رقم الهوية...">
+      </div>
 
       <button class="btn" id="printBtn" title="طباعة النتائج المصفّاة">🖨 طباعة</button>
       <button class="btn" id="exportExcelBtn" title="تصدير النتائج المصفّاة إلى Excel">📤 تصدير Excel</button>
       <button class="btn" id="exportAllPdfBtn" title="استخراج PDF لكل الطلاب">📄 PDF الكل</button>
     </div>
 
+    <!-- فلاتر -->
     <div class="filters">
       <div>
         <label class="small">الصف</label>
@@ -115,14 +296,20 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
       <span class="small">تنسيق Excel: اسم الطالب، الجوال، رقم الهوية، الصف، الفصل</span>
 
       <button class="btn" id="toggleAddFormBtn" title="إظهار/إخفاء نموذج الإضافة">➕ إضافة / تعديل</button>
+      <button class="btn" style="background:#f59e0b;color:#fff" onclick="printFilteredGradeReport()">🖨 طباعة كشف المتابعة</button>
     </div>
   </div>
 
+  <!-- نموذج الإضافة/التعديل -->
   <div class="card" id="addFormCard">
     <h3 id="formTitle" style="margin-top:0">➕ إضافة طالب جديد</h3>
     <div class="grid-2">
       <div><label>اسم الطالب</label><input id="f_name" type="text" placeholder="مثال: محمد علي"></div>
-      <div><label>الجوال</label><input id="f_phone" type="tel" placeholder="05xxxxxxxx"><div class="small">يُحوّل تلقائيًا لصيغة واتساب السعودية (+966)</div></div>
+      <div>
+        <label>الجوال</label>
+        <input id="f_phone" type="tel" placeholder="05xxxxxxxx">
+        <div class="small">يُحوّل تلقائيًا لصيغة واتساب السعودية (+966)</div>
+      </div>
       <div><label>رقم الهوية</label><input id="f_id" type="text" placeholder="10 أرقام"></div>
       <div class="grid-fit">
         <div><label>الصف</label><input id="f_grade" type="text" placeholder="أول / ثاني / ثالث..."></div>
@@ -135,6 +322,7 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
     </div>
   </div>
 
+  <!-- رسائل واتساب -->
   <div class="card" id="waSection">
     <h3 style="margin-top:0">الرسائل الجماعية واتساب</h3>
     <div class="grid-2">
@@ -175,13 +363,18 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
     <div id="bulkLinks" class="grid-fit hidden"></div>
   </div>
 
+  <!-- جدول الطلاب -->
   <div class="card" style="padding:0">
     <div class="table-card">
       <table id="studentsTable">
         <thead>
           <tr>
             <th class="nowrap">تحديد</th>
-            <th>الطالب</th><th>الجوال</th><th>رقم الهوية</th><th>الصف</th><th>الفصل</th>
+            <th>الطالب</th>
+            <th>الجوال</th>
+            <th>رقم الهوية</th>
+            <th>الصف</th>
+            <th>الفصل</th>
             <th class="nowrap">إجراءات</th>
           </tr>
         </thead>
@@ -190,6 +383,7 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
     </div>
   </div>
 
+  <!-- إحصاءات سريعة -->
   <div class="card">
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       <span class="tag" style="background:#eef2ff;color:#1e3a8a">إجمالي: <b id="countTotal">0</b></span>
@@ -199,12 +393,14 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
   </div>
 </div>
 
+<!-- لوحة الإعدادات الجانبية -->
 <div id="settingsPanel" class="settings-panel">
   <div class="settings-header">
     <h3>⚙️ الإعدادات</h3>
     <button class="close-settings" onclick="closeSettings()">✖</button>
   </div>
 
+  <!-- 🖼 الشعار -->
   <div class="accordion" id="acc-logo">
     <div class="acc-head" onclick="toggleAcc('acc-logo')">🖼️ الشعار</div>
     <div class="acc-body">
@@ -222,7 +418,8 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <div class="accordion open" id="acc-header">
+  <!-- 📄 إعدادات الترويسة -->
+  <div class="accordion" id="acc-header">
     <div class="acc-head" onclick="toggleAcc('acc-header')">📄 إعدادات الترويسة</div>
     <div class="acc-body">
       <div class="grid-2">
@@ -237,10 +434,11 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
         <button class="btn" id="saveHeaderBtn" style="background:var(--ok);color:#fff">💾 حفظ الترويسة</button>
         <button class="btn" id="resetHeaderBtn">🔁 افتراضي</button>
       </div>
-      <div class="small">ستُستخدم هذه البيانات في الطباعة وExcel وPDF، ويُعرض التاريخ (هجري + ميلادي) تلقائيًا تحت الترويسة.</div>
+      <div class="small">ستُستخدم هذه البيانات في الطباعة وExcel وPDF، ويُعرض التاريخ (هجري + ميلادي) تلقائيًا.</div>
     </div>
   </div>
 
+  <!-- ⏰ دوام المدرسة -->
   <div class="accordion" id="acc-start">
     <div class="acc-head" onclick="toggleAcc('acc-start')">⏰ دوام المدرسة</div>
     <div class="acc-body">
@@ -253,60 +451,122 @@ tbody td{padding:10px;border-bottom:1px solid var(--border)}
     </div>
   </div>
 
+  <!-- 🧩 عناصر الواجهة -->
   <div class="accordion" id="acc-ui">
     <div class="acc-head" onclick="toggleAcc('acc-ui')">🧩 عناصر الواجهة</div>
     <div class="acc-body">
       <label class="small">إظهار/إخفاء</label>
-      <label><input type="checkbox" id="opt_collapseAddForm" checked> إخفاء نموذج إضافة/تعديل حتى الضغط على ➕</label><br>
+      <label><input type="checkbox" id="opt_collapseAddForm" checked> إخفاء نموذج الإضافة حتى الضغط على ➕</label><br>
       <label><input type="checkbox" id="opt_hideWASection"> إخفاء قسم رسائل واتساب</label><br>
       <label><input type="checkbox" id="opt_showRowSummary" checked> ملخص الغياب/التأخر تحت الاسم</label><br>
       <label><input type="checkbox" id="opt_showLastMsg" checked> إظهار آخر رسالة</label><br>
-      <label><input type="checkbox" id="opt_showWarnings" checked> إظهار إنذارات الحد</label><br>
-      <label><input type="checkbox" id="opt_showRowWA" checked> زر واتساب في كل صف</label><br>
+      <label><input type="checkbox" id="opt_showWarnings" checked> إظهار الإنذارات</label><br>
+      <label><input type="checkbox" id="opt_showRowWA" checked> زر واتساب بكل صف</label><br>
       <button class="btn" id="saveProBtn" style="margin-top:6px">💾 حفظ</button>
     </div>
   </div>
 
+  <!-- 🚨 حدود الإنذار -->
   <div class="accordion" id="acc-thr">
     <div class="acc-head" onclick="toggleAcc('acc-thr')">🚨 حدود الإنذار</div>
     <div class="acc-body">
       <div class="grid-2">
-        <div><label>عدد التأخر لظهور "إنذار"</label><input id="thr_delay_alert" type="number" min="1" value="3"></div>
-        <div><label>عدد التأخر لظهور "تحذير كبير"</label><input id="thr_delay_warn" type="number" min="1" value="5"></div>
+        <div><label>عدد التأخر لظهور "إنذار"</label><input id="thr_delay_alert" type="number" value="3"></div>
+        <div><label>عدد التأخر لظهور "تحذير كبير"</label><input id="thr_delay_warn" type="number" value="5"></div>
       </div>
       <div class="grid-2">
-        <div><label>عدد الغياب لظهور "إنذار"</label><input id="thr_absent_alert" type="number" min="1" value="3"></div>
-        <div><label>عدد الغياب لظهور "تحذير كبير"</label><input id="thr_absent_warn" type="number" min="1" value="5"></div>
+        <div><label>عدد الغياب لظهور "إنذار"</label><input id="thr_absent_alert" type="number" value="3"></div>
+        <div><label>عدد الغياب لظهور "تحذير كبير"</label><input id="thr_absent_warn" type="number" value="5"></div>
       </div>
       <button class="btn" id="saveThrBtn" style="margin-top:6px">💾 حفظ</button>
     </div>
   </div>
 
+  <!-- 💬 قوالب واتساب + أعمدة الطباعة -->
   <div class="accordion" id="acc-wa">
     <div class="acc-head" onclick="toggleAcc('acc-wa')">💬 قوالب واتساب + أعمدة الطباعة</div>
     <div class="acc-body">
-      <label>قالب تأخر الطالب</label><textarea id="tplDelay"></textarea>
-      <label>قالب غياب الطالب</label><textarea id="tplAbsent"></textarea>
-      <label>قالب رسالة مخصصة</label><textarea id="tplCustom"></textarea>
-      <div class="grid-fit" style="margin-top:6px">
-        <button class="btn" id="saveTplBtn" style="background:var(--primary);color:#fff">💾 حفظ القوالب</button>
-        <button class="btn" id="resetTplBtn">🔁 افتراضي</button>
-      </div>
-      <hr>
-      <label>📄 أعمدة الطباعة/التصدير</label><br>
-      <label><input type="checkbox" id="col_name" checked> اسم الطالب</label><br>
-      <label><input type="checkbox" id="col_phone" checked> الجوال</label><br>
-      <label><input type="checkbox" id="col_id" checked> رقم الهوية</label><br>
-      <label><input type="checkbox" id="col_grade" checked> الصف</label><br>
-      <label><input type="checkbox" id="col_class" checked> الفصل</label><br>
-      <div class="grid-fit" style="margin-top:6px">
-        <button class="btn" id="savePEBtn" style="background:var(--ok);color:#fff">💾 حفظ</button>
-        <button class="btn" id="resetPEBtn">🔁 افتراضي</button>
+      <div class="scrollable-acc-content">
+        <label>قالب تأخر الطالب</label><textarea id="tplDelay"></textarea>
+        <label>قالب غياب الطالب</label><textarea id="tplAbsent"></textarea>
+        <label>قالب رسالة مخصصة</label><textarea id="tplCustom"></textarea>
+
+        <div class="grid-fit" style="margin-top:6px">
+          <button class="btn" id="saveTplBtn" style="background:var(--primary);color:#fff">💾 حفظ القوالب</button>
+          <button class="btn" id="resetTplBtn">🔁 افتراضي</button>
+        </div>
+
+        <hr>
+        <label>📄 أعمدة التصدير والطباعة</label><br>
+        <label><input type="checkbox" id="col_name" checked> اسم الطالب</label><br>
+        <label><input type="checkbox" id="col_phone" checked> الجوال</label><br>
+        <label><input type="checkbox" id="col_id" checked> رقم الهوية</label><br>
+        <label><input type="checkbox" id="col_grade" checked> الصف</label><br>
+        <label><input type="checkbox" id="col_class" checked> الفصل</label><br>
+
+        <div class="grid-fit" style="margin-top:6px">
+          <button class="btn" id="savePEBtn" style="background:var(--ok);color:#fff">💾 حفظ</button>
+          <button class="btn" id="resetPEBtn">🔁 افتراضي</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- 🖨 إعدادات طباعة كشف المتابعة -->
+  <div class="accordion" id="acc-print">
+    <div class="acc-head" onclick="toggleAcc('acc-print')">🖨 إعدادات طباعة كشف المتابعة</div>
+    <div class="acc-body">
+      <div class="scrollable-acc-content">
+        <label>📝 اسم عمود السلوك</label>
+        <input type="text" id="col_behavior" value="السلوك">
+
+        <label>📚 اسم عمود الكتاب</label>
+        <input type="text" id="col_book" value="الكتاب">
+
+        <label>📘 اسم عمود الواجبات</label>
+        <input type="text" id="col_homework" value="الواجبات">
+
+        <label>🤝 اسم عمود المشاركة</label>
+        <input type="text" id="col_participation" value="المشاركة">
+
+        <label>⏳ اسم عمود الفترة</label>
+        <input type="text" id="col_period" value="فترة">
+
+        <hr>
+        <label>🔤 حجم الخط داخل الكشف (px)</label>
+        <input type="number" id="print_font_size" value="10" min="8" max="16">
+
+        <label>↕ ارتفاع صف الطالب (px)</label>
+        <input type="number" id="row_height" value="13" min="10" max="25">
+
+        <label>⬜ عدد المربعات في كل عمود</label>
+        <input type="number" id="box_count" value="10" min="5" max="20">
+
+        <hr>
+        <label>📄 الهامش العلوي (mm)</label>
+        <input type="number" id="margin_top" value="2">
+
+        <label>📄 الهامش السفلي (mm)</label>
+        <input type="number" id="margin_bottom" value="2">
+
+        <label>📄 الهامش الأيمن (mm)</label>
+        <input type="number" id="margin_right" value="6">
+
+        <label>📄 الهامش الأيسر (mm)</label>
+        <input type="number" id="margin_left" value="6">
+
+        <div class="grid-fit" style="margin-top:6px">
+          <button class="btn" onclick="savePrintSettings()" style="background:var(--ok);color:#fff">💾 حفظ الإعدادات</button>
+          <button class="btn" onclick="resetPrintSettings()">🔁 افتراضي</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> <!-- /settingsPanel -->
+
+<!-- خلفية إغلاق لوحة الإعدادات (نسخة واحدة فقط) -->
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.15);display:none;z-index:999" onclick="closeSettings()"></div>
+
 
 <script>
 /* ===== مفاتيح التخزين ===== */
@@ -423,7 +683,13 @@ function render(){const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';co
   if(pro.showWarnings && sum.delayCount>=pro.thr.delay_alert) nameHtml+=`<div class="meta-line"><span class="badge-warn">إنذار تأخر (${sum.delayCount})</span></div>`;
   nameHtml+=`</div>`;
   const waUrl=waLink(s.phone,`السلام عليكم ولي أمر ${s.name??''}`);
-  const waBtn=pro.showRowWA?`<a class="btn row-wa" data-uid="${s.uid}" href="${waUrl}" target="_blank" style="padding:6px 9px;background:var(--accent);color:#003049;border-color:transparent">🟢 واتساب</a>`:'';
+  const waBtn = pro.showRowWA
+  ? `<a class="icon-btn" 
+        title="واتساب" 
+        data-uid="${s.uid}" 
+        href="${waUrl}" 
+        target="_blank">🟢</a>`
+  : '';
   tr.innerHTML=`
 <td><input type="checkbox" class="rowSel" data-uid="${s.uid}" ${checked}></td>
 <td>${nameHtml}</td>
@@ -436,8 +702,8 @@ function render(){const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';co
     <a class="btn" style="padding:6px 9px" href="tel:${encodeURIComponent(s.phone||'')}" title="اتصال">📞</a>
     ${waBtn}
     <button class="btn stats-btn" style="padding:6px 9px" data-act="stats" data-uid="${s.uid}" title="إحصائيات">📊</button>
-    <button class="btn" style="padding:6px 9px" data-act="edit" data-uid="${s.uid}">✏</button>
-    <button class="btn" style="padding:6px 9px;background:var(--warn);color:#fff;border-color:transparent" data-act="del" data-uid="${s.uid}">🗑</button>
+    <button class="btn" style="padding:6px 9px" data-act="edit" data-uid="${s.uid}" title="تعديل">✏</button>
+    <button class="btn" style="padding:6px 9px" data-act="del" data-uid="${s.uid}" title="حذف">🗑</button>
   </div>
 </td>`;
   tbody.appendChild(tr);
@@ -596,7 +862,7 @@ function buildOfficialHeaderHTML(){
 function printTableOnly(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لطباعتها');return}
   const t=todayInfo(), grade=gradeFilter||'كل الصفوف', cls=classFilter||'كل الفصول';
-  const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للطباعة');return}
+  const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للطباعة. يرجى التحديد من الإعدادات.');return}
   const thead = `<tr><th>الرقم</th>${order.map(k=>`<th>${labels[k]}</th>`).join('')}</tr>`;
   const rows  = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
   const header = buildOfficialHeaderHTML();
@@ -615,7 +881,7 @@ document.getElementById('printBtn').addEventListener('click',printTableOnly);
 /* ===== تصدير Excel مع ترويسة سادة + التاريخ ===== */
 function exportFilteredExcel(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لتصديرها.');return}
-  const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للتصدير.');return}
+  const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للتصدير. يرجى التحديد من الإعدادات.');return}
   const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = s[k] || ''; }); return obj; });
 
   const ws = XLSX.utils.json_to_sheet(rows);
@@ -623,10 +889,12 @@ function exportFilteredExcel(){
   const headAoa = [
     [headerData.country||'', "", "", headerData.ministry||""],
     [headerData.directorate||"", "", "", headerData.school||""],
-    ["التاريخ:", `${t.hijri} الموافق ${t.miladi}`, "", ""]
+    ["التاريخ:", `${t.hijri} الموافق ${t.miladi}`, "", ""],
+    [""]
   ];
+  // استخدام index للتأكد من وضع البيانات فوق رأس الجدول
   XLSX.utils.sheet_add_aoa(ws, headAoa, {origin:"A1"});
-  const startRow = headAoa.length + 2;
+  const startRow = headAoa.length + 1;
   const ws2 = XLSX.utils.json_to_sheet(rows, {origin: {r:startRow-1, c:0}});
   Object.assign(ws, ws2);
 
@@ -707,14 +975,24 @@ if(!document.getElementById('statsModal')){
 }
 
 let currentStatsUid=null;
-let editingRecordId=null; // <--- **المتغير الجديد لتتبع السجل قيد التعديل**
+let editingRecordId=null;
 
 function applyStatsFilter(list){ const y=$('#fltYear').value||''; const m=$('#fltMonth').value||''; const t=$('#fltType').value||''; return list.filter(r=>{ let ok=true; if(y){ ok = ok && r.date?.endsWith(y); } if(m){ ok = ok && (r.date?.split('/')?.[1]?.trim()===(String(m).padStart(2,'0'))); } if(t){ ok = ok && (r.type===t); } return ok; }); }
 function showStats(uid){
   currentStatsUid = uid;
-  editingRecordId = null; // إعادة تعيين وضع التعديل عند فتح النافذة
-  $('#ar_save').textContent = 'حفظ السجل'; // إعادة تعيين زر الحفظ
-  $('#addRecForm').classList.add('hidden'); // إخفاء نموذج الإضافة افتراضياً
+  editingRecordId = null;
+  $('#ar_save').textContent = 'حفظ السجل';
+  $('#btnAddRecord').textContent = '➕ إضافة سجل سابق';
+  $('#btnAddRecord').onclick=()=>{
+    editingRecordId = null;
+    $('#ar_save').textContent = 'حفظ السجل';
+    $('#ar_type').value = 'delay';
+    $('#ar_date').value = '';
+    $('#ar_time').value = '';
+    $('#ar_minutes').value = '';
+    $('#addRecForm').classList.toggle('hidden');
+  };
+  $('#addRecForm').classList.add('hidden'); 
 
   const s = students.find(x=>x.uid===uid); const name=s?.name||'بدون اسم';
   let recs = (loadRecords()[uid] || []);
@@ -722,7 +1000,6 @@ function showStats(uid){
   let totalAbsent = recs.filter(r=>r.type==='absent').length;
   let totalDelayMin = recs.filter(r=>r.type==='delay').reduce((a,r)=>a+(r.minutes||0),0);
   
-  // الكود المعدل لعرض السجلات مع أزرار الإجراءات
   const rows = recs.map((r,i)=>`
     <tr>
       <td>${i+1}</td>
@@ -733,11 +1010,12 @@ function showStats(uid){
       <td>${r.time||''}</td>
       <td>
         <div style="display:flex;gap:4px;justify-content:center">
-          <button class="btn btn-sm" style="padding:4px 8px" onclick="editRecord('${r.id}')">✏️</button>
-          <button class="btn btn-sm" style="padding:4px 8px;background:var(--warn);color:#fff" onclick="deleteRecord('${r.id}')">🗑️</button>
+          <button class="btn btn-sm" style="padding:4px 8px"title="تعديل" onclick="editRecord('${r.id}')">✏️</button>
+          <button class="btn btn-sm" style="padding:4px 8px"title="حذف" onclick="deleteRecord('${r.id}')">🗑️</button>
+
         </div>
       </td>
-    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#64748b">لا توجد سجلات.</td></tr>`; // colspan changed to 7
+    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#64748b">لا توجد سجلات.</td></tr>`;
     
   const html = `
     <div class="stats-header">
@@ -749,7 +1027,8 @@ function showStats(uid){
       </div>
     </div>
     <table class="stats-table">
-      <thead><tr><th>#</th><th>النوع</th><th>التأخير</th><th>الميلادي</th><th>الهجري</th><th>الوقت</th><th>إجراءات</th></tr></thead> <tbody>${rows}</tbody>
+      <thead><tr><th>#</th><th>النوع</th><th>التأخير</th><th>الميلادي</th><th>الهجري</th><th>الوقت</th><th>إجراءات</th></tr></thead>
+      <tbody>${rows}</tbody>
     </table>`;
   $('#statsDetails').innerHTML = html;
   $('#statsModal').style.display='flex';
@@ -761,17 +1040,6 @@ function showStats(uid){
   $('#fltMonth').oninput=()=>showStats(uid);
   $('#btnPrintStats').onclick=()=>{ const w=window.open('','_blank'); w.document.write(`<html dir=rtl><head><meta charset=utf-8><style>body{font-family:Cairo,sans-serif;padding:20px}</style></head><body>${$('#statsDetails').innerHTML}</body></html>`); w.document.close(); w.print(); };
   $('#btnPdfStats').onclick=()=>openStatsPDFFor(uid);
-  
-  // زر إظهار نموذج الإضافة
-  $('#btnAddRecord').onclick=()=>{
-    editingRecordId = null;
-    $('#ar_save').textContent = 'حفظ السجل';
-    $('#ar_type').value = 'delay';
-    $('#ar_date').value = '';
-    $('#ar_time').value = '';
-    $('#ar_minutes').value = '';
-    $('#addRecForm').classList.toggle('hidden');
-  };
   
   // الكود المعدل لحفظ/تحديث السجل
   $('#ar_save').onclick=()=>{
@@ -845,12 +1113,23 @@ function editRecord(recId){
   // تحديث حالة التعديل
   editingRecordId = recId;
   $('#ar_save').textContent = 'تحديث السجل';
-  // التأكد من أن العنوان في وضع التعديل/الإضافة لتمكين الإلغاء
+  
+  // تحديث زر الإضافة إلى زر إلغاء التعديل
   $('#btnAddRecord').textContent = '❌ إلغاء التعديل'; 
   $('#btnAddRecord').onclick = () => {
       editingRecordId = null;
       $('#ar_save').textContent = 'حفظ السجل';
+      // إعادة تعيين زر الإضافة لوظيفته الأصلية
       $('#btnAddRecord').textContent = '➕ إضافة سجل سابق';
+      $('#btnAddRecord').onclick=()=>{
+        editingRecordId = null;
+        $('#ar_save').textContent = 'حفظ السجل';
+        $('#ar_type').value = 'delay';
+        $('#ar_date').value = '';
+        $('#ar_time').value = '';
+        $('#ar_minutes').value = '';
+        $('#addRecForm').classList.toggle('hidden');
+      };
       $('#addRecForm').classList.add('hidden');
   };
   window.scrollTo({top:0,behavior:'smooth'}) // الانتقال لأعلى النافذة
@@ -887,6 +1166,248 @@ function init(){ loadSettings(); loadLS(); loadTemplates(); loadPE(); loadLogo()
   const statsModal=document.getElementById('statsModal'); if(statsModal) statsModal.style.display='none';
 }
 init();
+
+function buildGradeReportHTML(studentList) {
+    // تقبل studentList وهي قائمة الطلاب التي تم تصفيتها من الدالة الرئيسية
+    if (!studentList || studentList.length === 0) return '';
+
+    // عناوين الجدول
+    const headers = ["اسم الطالب", "المشاركة", "الواجبات", "الكتاب", "السلوك", "فترة 1", "المجموع"];
+    
+    // فرز الطلاب بالصف ثم الفصل ثم الاسم لضمان التجميع الصحيح في التقرير
+    let sortedStudents = studentList.sort((a, b) => {
+        const classA = `${a.grade || ''} - ${a.class || ''}`;
+        const classB = `${b.grade || ''} - ${b.class || ''}`;
+        
+        // فرز حسب الصف والفصل أولاً
+        if (classA < classB) return -1;
+        if (classA > classB) return 1;
+        
+        // ثم فرز أبجدي بالاسم
+        return a.name.localeCompare(b.name, 'ar'); 
+    });
+
+    let currentClass = '';
+    let tableRows = '';
+    
+    sortedStudents.forEach((s) => {
+        // المفتاح الفريد للصف والفصل
+        const studentClass = (s.grade && s.class) ? `${s.grade} - ${s.class}` : (s.class || 'غير محدد');
+
+        // إضافة ترويسة الفصل عند تغيير الفصل
+        if (studentClass !== currentClass) {
+            tableRows += `<tr style="background:#f0f0f0;font-weight:bold;"><td colspan="${headers.length}">الفصل: ${studentClass}</td></tr>`;
+            currentClass = studentClass;
+        }
+
+        // إدراج اسم الطالب فقط، وباقي الخلايا فارغة
+        const rowData = [escapeHtml(s.name)];
+        for (let i = 1; i < headers.length; i++) {
+            rowData.push(''); // خلية فارغة للدرجات
+        }
+        
+        tableRows += `<tr><td>${rowData.join('</td><td>')}</td></tr>`;
+    });
+    
+    // استخدام دالة بناء الترويسة الموجودة لديك
+    const headerHtml = window.buildOfficialHeaderHTML ? buildOfficialHeaderHTML() : '';
+    
+    return `
+        <div style="page-break-after: always; padding-bottom: 20px;">
+            ${headerHtml}
+            <h3 style="text-align:center;margin:6px 0 12px; font-size:18px;">📄 كشف متابعة الدرجات</h3>
+            <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:13px;" border="1" cellspacing="0" cellpadding="8">
+                <thead style="background:#f7f7f7; font-weight: bold;">
+                    <tr>
+                        <th>${headers.join('</th><th>')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+/* ✅ بداية دالة الطباعة المرتبطة بإعدادات المستخدم */
+/* ✅ بداية دالة printFilteredGradeReport النهائية */
+function printFilteredGradeReport() {
+    // ✅ 1. جلب الطلاب حسب الفلاتر
+    let data = getFiltered();
+    if (!data.length) data = students;
+    if (!data.length) {
+        alert("لا توجد بيانات طلاب للطباعة");
+        return;
+    }
+
+    // ✅ 2. جلب إعدادات الطباعة من LocalStorage
+    const col_behavior = localStorage.getItem("col_behavior") || "السلوك";
+    const col_book = localStorage.getItem("col_book") || "الكتاب";
+    const col_homework = localStorage.getItem("col_homework") || "الواجبات";
+    const col_participation = localStorage.getItem("col_participation") || "المشاركة";
+    const col_period = localStorage.getItem("col_period") || "فترة";
+
+    const fontSize = parseInt(localStorage.getItem("print_font_size")) || 10;
+    const rowHeight = parseInt(localStorage.getItem("row_height")) || 13;
+    const boxCount = parseInt(localStorage.getItem("box_count")) || 10;
+    const marginTop = parseInt(localStorage.getItem("margin_top")) || 2;
+    const marginBottom = parseInt(localStorage.getItem("margin_bottom")) || 2;
+    const marginRight = parseInt(localStorage.getItem("margin_right")) || 6;
+    const marginLeft = parseInt(localStorage.getItem("margin_left")) || 6;
+
+    // ✅ 3. بناء مربعات التقييم الديناميكية
+    function buildBoxes(count) {
+        let row1 = "", row2 = "";
+        let half = Math.ceil(count / 2);
+        for (let i = 0; i < count; i++) {
+            if (i < half) row1 += "☐ ";
+            else row2 += "☐ ";
+        }
+        return `<div style="line-height:1; font-size:${fontSize}px;">${row1}<br>${row2}</div>`;
+    }
+
+    // ✅ 4. تجهيز الترويسة
+    const t = todayInfo();
+    const gradeName = gradeFilter || "غير محدد";
+    const className = classFilter || "غير محدد";
+    const logo = localStorage.getItem(LOGO_KEY)
+        ? `<img src="${localStorage.getItem(LOGO_KEY)}" style="max-height:28px; max-width:80px;">`
+        : "";
+
+    const header = `
+    <div style="font-size:${fontSize}px; text-align:center; line-height:1.2; margin-bottom:4px;">
+        <div style="display:flex; justify-content:space-between;">
+            <div style="text-align:right;">
+                ${headerData.country || "المملكة العربية السعودية"}<br>
+                ${headerData.ministry || "وزارة التعليم"}
+            </div>
+            <div>${logo}</div>
+            <div style="text-align:left;">
+                ${headerData.directorate || ""}<br>
+                ${headerData.school || ""}
+            </div>
+        </div>
+        <div style="margin-top:3px; font-weight:bold;">
+            كشف متابعة الصف ${gradeName} – الفصل ${className}
+        </div>
+        <div style="font-size:${fontSize - 1}px;">
+            التاريخ: ${t.hijri} الموافق ${t.miladi}
+        </div>
+    </div>`;
+
+    // ✅ 5. بناء الصفوف
+    let rows = "";
+    data.forEach((s, i) => {
+        rows += `
+        <tr>
+            <td>${i + 1}</td>
+            <td style="text-align:right;">${escapeHtml(s.name)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+        </tr>`;
+    });
+
+    // ✅ 6. صفحة الطباعة النهائية
+    const html = `
+    <html dir="rtl">
+    <head>
+        <meta charset="utf-8">
+        <style>
+            @page {
+                size: A4;
+                margin-top:${marginTop}mm;
+                margin-bottom:${marginBottom}mm;
+                margin-right:${marginRight}mm;
+                margin-left:${marginLeft}mm;
+            }
+            body {
+                font-family: "Cairo", sans-serif;
+                -webkit-print-color-adjust: exact;
+                margin: 0;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 2px;
+            }
+            th, td {
+                border: 1px solid #000;
+                font-size:${fontSize}px;
+                padding: 1px;
+                text-align: center;
+                height:${rowHeight}px;
+                vertical-align: middle;
+            }
+            th {
+                background: #f0f0f0;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        ${header}
+        <table>
+            <thead>
+                <tr>
+                    <th>م</th>
+                    <th>اسم الطالب</th>
+                    <th>${col_behavior}</th>
+                    <th>${col_book}</th>
+                    <th>${col_homework}</th>
+                    <th>${col_participation}</th>
+                    <th>${col_period}</th>
+                    <th>المجموع</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    </body>
+    </html>`;
+
+    // ✅ 7. فتح نافذة الطباعة
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    w.onload = () => w.print();
+}
+/* ✅ نهاية الدالة */
+
+/* ✅ نهاية دالة الطباعة */
+
+/* ✅ بداية كود حفظ إعدادات الطباعة */
+function savePrintSettings() {
+    localStorage.setItem("print_font_size", document.getElementById("print_font_size").value);
+    localStorage.setItem("row_height", document.getElementById("row_height").value);
+    localStorage.setItem("box_count", document.getElementById("box_count").value);
+    localStorage.setItem("margin_top", document.getElementById("margin_top").value);
+    localStorage.setItem("margin_bottom", document.getElementById("margin_bottom").value);
+    localStorage.setItem("margin_right", document.getElementById("margin_right").value);
+    localStorage.setItem("margin_left", document.getElementById("margin_left").value);
+    alert("✅ تم حفظ إعدادات الطباعة بنجاح");
+}
+/* ✅ نهاية كود حفظ إعدادات الطباعة */
+
+/* ✅ بداية كود فتح/طي إعدادات طباعة كشف المتابعة */
+function togglePrintSettings() {
+    const box = document.getElementById("printSettingsBox");
+    const title = document.querySelector('h3[onclick="togglePrintSettings()"]');
+
+    if (box.style.display === "none") {
+        box.style.display = "block";
+        title.innerHTML = "🖨 إعدادات طباعة كشف المتابعة ⬆"; // سهم لأعلى عند الفتح
+    } else {
+        box.style.display = "none";
+        title.innerHTML = "🖨 إعدادات طباعة كشف المتابعة ⬇"; // سهم لأسفل عند الإغلاق
+    }
+}
+/* ✅ نهاية كود فتح/طي إعدادات طباعة كشف المتابعة */
+
 
 </script>
 </body>
