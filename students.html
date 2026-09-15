@@ -449,7 +449,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 🔐 تغيير بيانات المشرف (للمشرف فقط) -->
+  <!-- 🔐 تغيير بيانات المشرف (لالمشرف فقط) -->
   <div class="accordion admin-only hidden" id="acc-auth">
     <div class="acc-head" onclick="toggleAcc('acc-auth')">🔐 بيانات دخول المشرف</div>
     <div class="acc-body">
@@ -461,7 +461,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 🖼 الشعار (للمشرف) -->
+  <!-- 🖼 الشعار (لالمشرف) -->
   <div class="accordion admin-only hidden" id="acc-logo">
     <div class="acc-head" onclick="toggleAcc('acc-logo')">🖼️ الشعار</div>
     <div class="acc-body">
@@ -511,11 +511,13 @@ const AUTH_KEY = 'admin_auth_credentials_v1';
 
 let isAdmin = false;
 
+/* ✅ كود التحديث والتنظيف التلقائي للحساب القديم (Migration Fix) */
 function checkAndFixOldCredentials() {
   try {
     const rawData = localStorage.getItem(AUTH_KEY);
     if (rawData) {
       const parsed = JSON.parse(rawData);
+      // إذا كانت البيانات مخزنة بصيغة قديمة غير مشفرة أو تحتوي على admin القديم
       if (parsed.user === 'admin' || (parsed.u && atob(parsed.u) === 'admin')) {
         localStorage.removeItem(AUTH_KEY);
       }
@@ -605,7 +607,7 @@ let headerData={country:'المملكة العربية السعودية',ministr
 
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const uid=()=> 'S'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
-const escapeHtml=t=>String(t??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;u'}[s]));
+const escapeHtml=t=>String(t??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
 const localeSort=(a,b)=>a.localeCompare(b,'ar',{numeric:true,sensitivity:'base'});
 
 function toSaudiWhatsApp(numRaw){if(!numRaw)return'';let n=String(numRaw).replace(/\D+/g,'');if(n.startsWith('00966'))n=n.replace(/^00966/,'');if(n.startsWith('966'))n=n.replace(/^966/,'');if(n.startsWith('0'))n=n.slice(1);return '+966'+n}
@@ -670,91 +672,6 @@ function loadLogo(){try{schoolLogo=localStorage.getItem(LOGO_KEY)||null}catch{sc
 
 function saveLS(){localStorage.setItem(LS_KEY,JSON.stringify(students));refreshFiltersOptions();render()}
 function loadLS(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'[]');students=Array.isArray(v)?v:[]}catch{students=[]}}
-
-/* ===== دالة مركزية لمعالجة وتحويل محتوى ملف الـ Excel (تستخدم للزر وللجلب التلقائي) ===== */
-function processExcelWorkbook(workbook) {
-  const firstSheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[firstSheetName];
-  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-  
-  if (jsonData.length < 2) return 0;
-
-  const headers = jsonData[0].map(h => String(h || '').trim());
-  const nameIdx = headers.findIndex(h => h.includes('اسم') || h.includes('الطالب'));
-  const phoneIdx = headers.findIndex(h => h.includes('جوال') || h.includes('هاتف') || h.includes('الجوال'));
-  const idIdx = headers.findIndex(h => h.includes('هوية') || h.includes('سجل') || h.includes('الرقم المدني'));
-  const gradeIdx = headers.findIndex(h => h.includes('صف') || h.includes('الصف'));
-  const classIdx = headers.findIndex(h => h.includes('فصل') || h.includes('الفصل'));
-
-  let loadedStudents = [];
-  for (let i = 1; i < jsonData.length; i++) {
-    const row = jsonData[i];
-    if (!row || row.length === 0) continue;
-
-    const name = nameIdx > -1 ? row[nameIdx] : row[1];
-    if (!name) continue;
-
-    loadedStudents.push({
-      uid: uid(),
-      name: String(name || '').trim(),
-      phone: String(phoneIdx > -1 ? row[phoneIdx] : (row[2] || '')).trim(),
-      id: String(idIdx > -1 ? row[idIdx] : (row[3] || '')).trim(),
-      grade: String(gradeIdx > -1 ? row[gradeIdx] : (row[4] || '')).trim(),
-      class: String(classIdx > -1 ? row[classIdx] : (row[5] || '')).trim()
-    });
-  }
-
-  if (loadedStudents.length > 0) {
-    students = loadedStudents;
-    saveLS();
-  }
-  return loadedStudents.length;
-}
-
-/* ===== الجلب التلقائي لملف StudentGuidance.xls من نفس المجلد لجميع الزائرين ===== */
-function autoLoadDefaultFile() {
-  fetch('StudentGuidance.xls')
-    .then(response => {
-      if (!response.ok) throw new Error('الملف غير موجود');
-      return response.arrayBuffer();
-    })
-    .then(buffer => {
-      const data = new Uint8Array(buffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      processExcelWorkbook(workbook);
-    })
-    .catch(() => {
-      // إن لم يتم العثور عليه تلقائياً عبر fetch، يتم الاعتماد على التخزين المحلي
-      loadLS();
-    });
-}
-
-/* ===== استيراد ملف Excel يدوياً عبر الزر ===== */
-document.getElementById('excelInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    try {
-      const data = new Uint8Array(event.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const count = processExcelWorkbook(workbook);
-      
-      if (count > 0) {
-        alert(`✅ تم استيراد ${count} طالباً بنجاح من ملف الـ Excel!`);
-      } else {
-        alert('⚠️ لم يتم العثور على بيانات مطابقة في الملف.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('❌ حدث خطأ أثناء قراءة ملف الـ Excel.');
-    } finally {
-      e.target.value = '';
-    }
-  };
-  reader.readAsArrayBuffer(file);
-});
 
 function refreshFiltersOptions(){const gradeSel=$('#gradeFilter');if(!gradeSel)return;const grades=[...new Set(students.map(s=>(s.grade||'').trim()).filter(Boolean))].sort(localeSort);const prev=gradeFilter;gradeSel.innerHTML=`<option value="">كل الصفوف</option>`+grades.map(g=>`<option ${g===prev?'selected':''} value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');applyClassOptions();gradeFilter=$('#gradeFilter').value||'';classFilter=$('#classFilter').value||''}
 function applyClassOptions(){const classSel=$('#classFilter');if(!classSel)return;const g=$('#gradeFilter')?.value||'';let classes=[];if(g){classes=[...new Set(students.filter(s=>(s.grade||'').trim()===g).map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}else{classes=[...new Set(students.map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}const keep=classFilter;classSel.disabled=false;classSel.innerHTML=`<option value="">كل الفصول</option>`+classes.map(c=>`<option ${c===keep?'selected':''} value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('')}
@@ -872,62 +789,18 @@ function printTableOnly(){
   const t=todayInfo(), grade=gradeFilter||'كل الصفوف', cls=classFilter||'كل الفصول';
   const {order, labels} = getSelectedColumns();
   if(!order.length){alert('يرجى تحديد عمود واحد على الأقل للطباعة من الإعدادات!');return}
-  
-  const headerHTML = buildOfficialHeaderHTML();
-  const thCols = `<tr><th>الرقم</th>${order.map(k=>`<th>${labels[k]}</th>`).join('')}</tr>`;
-  const rows = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
-  
+  const thead = `<tr><th>الرقم</th>${order.map(k=>`<th>${labels[k]}</th>`).join('')}</tr>`;
+  const rows  = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
+  const header = buildOfficialHeaderHTML();
   const html=`<html dir="rtl"><head><title>كشف الطلاب</title>
-  <style>
-    @page {
-      size: A4;
-      margin: 10mm 10mm 15mm 10mm;
-      @bottom-center {
-        content: "صفحة " counter(page) " من " counter(pages);
-        font-family: Cairo, sans-serif;
-        font-size: 11px;
-      }
-    }
-    body { font-family: Cairo, sans-serif; margin: 0; }
-    h2 { margin: 4px 0 2px 0; text-align: center; font-size: 16px; }
-    .sub-title { text-align: center; margin: 0 0 8px 0; font-size: 12px; }
-    table { width: 100%; border-collapse: collapse; }
-    thead { display: table-header-group; }
-    tfoot { display: table-footer-group; }
-    tr { page-break-inside: avoid; }
-    th, td { border: 1px solid #000; padding: 5px; font-size: 12px; text-align: center; }
-    th { background: #f0f0f0; font-weight: bold; }
-    .header-plain { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
-    .header-date { text-align: center; margin: 2px 0 6px 0; font-size: 11px; }
-  </style>
+  <style> body{font-family:Cairo,sans-serif;margin:20px} h2{margin:8px 0;text-align:center} table{width:100%;border-collapse:collapse;margin-top:12px} th,td{border:1px solid #000;padding:6px;font-size:14px} th{background:#f0f0f0} .header-plain{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px} .header-date{text-align:center;margin:6px 0 10px} </style>
   </head><body>
-  
-  <table>
-    <thead>
-      <tr>
-        <td colspan="${order.length + 1}" style="border:none; padding:0; text-align:stretch;">
-          ${headerHTML}
-          <h2>📋 كشف الطلاب</h2>
-          <div class="sub-title">الصف: <b>${grade}</b> — الفصل: <b>${cls}</b> | التاريخ: ${t.fullDate}</div>
-        </td>
-      </tr>
-      ${thCols}
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>
-
-  <script>
-    window.onload = function() {
-      window.print();
-      setTimeout(function(){ window.close(); }, 500);
-    };
-  <\/script>
+  ${header}
+  <h2>📋 كشف الطلاب</h2>
+  <p style="text-align:center;margin:4px 0 10px">الصف: <b>${grade}</b> — الفصل: <b>${cls}</b><br>التاريخ: ${t.fullDate}</p>
+  <table><thead>${thead}</thead><tbody>${rows}</tbody></table>
   </body></html>`;
-
-  const w=window.open('','_blank'); 
-  w.document.open(); 
-  w.document.write(html); 
-  w.document.close();
+  const w=window.open('','_blank'); w.document.open(); w.document.write(html); w.document.close(); w.onload=()=>{w.print(); setTimeout(()=>w.close(),500)}
 }
 document.getElementById('printBtn').addEventListener('click',printTableOnly);
 
@@ -943,6 +816,7 @@ function exportFilteredExcel(){
 }
 document.getElementById('exportExcelBtn').addEventListener('click',exportFilteredExcel);
 
+/* ===== طباعة كشف المتابعة ===== */
 function printFilteredGradeReport() {
     let data = getFiltered();
     if (!data.length) data = students;
@@ -988,7 +862,7 @@ function printFilteredGradeReport() {
 
     const header = `
     <div style="font-size:${fontSize}px; text-align:center; line-height:1.2; margin-bottom:4px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; justify-content:space-between;">
             <div style="text-align:right;">${headerData.country}<br>${headerData.ministry}</div>
             <div>${logo}</div>
             <div style="text-align:left;">${headerData.directorate}<br>${headerData.school}</div>
@@ -997,14 +871,13 @@ function printFilteredGradeReport() {
         <div style="font-size:${fontSize - 1}px;">التاريخ: ${t.hijri} الموافق ${t.miladi}</div>
     </div>`;
 
-    let colCount = 2;
     let ths = `<th>م</th><th>اسم الطالب</th>`;
-    if(colsVis.behavior) { ths += `<th>${colLabels.behavior}</th>`; colCount++; }
-    if(colsVis.book) { ths += `<th>${colLabels.book}</th>`; colCount++; }
-    if(colsVis.homework) { ths += `<th>${colLabels.homework}</th>`; colCount++; }
-    if(colsVis.participation) { ths += `<th>${colLabels.participation}</th>`; colCount++; }
-    if(colsVis.period) { ths += `<th>${colLabels.period}</th>`; colCount++; }
-    if(colsVis.total) { ths += `<th>المجموع</th>`; colCount++; }
+    if(colsVis.behavior) ths += `<th>${colLabels.behavior}</th>`;
+    if(colsVis.book) ths += `<th>${colLabels.book}</th>`;
+    if(colsVis.homework) ths += `<th>${colLabels.homework}</th>`;
+    if(colsVis.participation) ths += `<th>${colLabels.participation}</th>`;
+    if(colsVis.period) ths += `<th>${colLabels.period}</th>`;
+    if(colsVis.total) ths += `<th>المجموع</th>`;
 
     let rows = "";
     data.forEach((s, i) => {
@@ -1021,48 +894,28 @@ function printFilteredGradeReport() {
     const html = `
     <html dir="rtl"><head><meta charset="utf-8">
         <style>
-            @page {
-              size: A4;
-              margin: 8mm 8mm 12mm 8mm;
-              @bottom-center {
-                content: "صفحة " counter(page) " من " counter(pages);
-                font-family: Cairo, sans-serif;
-                font-size: 10px;
-              }
-            }
+            @page { size: A4; margin: 5mm; }
             body { font-family: "Cairo", sans-serif; margin: 0; }
-            table { width: 100%; border-collapse: collapse; }
-            thead { display: table-header-group; }
-            tr { page-break-inside: avoid; }
+            table { width: 100%; border-collapse: collapse; margin-top: 2px; }
             th, td { border: 1px solid #000; font-size:${fontSize}px; padding: 1px; text-align: center; height:${rowHeight}px; vertical-align: middle; }
             th { background: #f0f0f0; font-weight: bold; }
         </style>
     </head>
     <body>
+        ${header}
         <table>
-            <thead>
-                <tr>
-                    <td colspan="${colCount}" style="border:none; padding:0 0 4px 0;">
-                        ${header}
-                    </td>
-                </tr>
-                <tr>${ths}</tr>
-            </thead>
+            <thead><tr>${ths}</tr></thead>
             <tbody>${rows}</tbody>
         </table>
-        <script>
-          window.onload = function() {
-            window.print();
-            setTimeout(function(){ window.close(); }, 500);
-          };
-        <\/script>
     </body></html>`;
 
     const w = window.open('', '_blank');
     w.document.write(html);
     w.document.close();
+    w.onload = () => w.print();
 }
 
+/* ===== فتح وإغلاق لوحة الإعدادات والأقسام (Accordion) ===== */
 function openSettings(){
   const creds = getAdminCredentials();
   if($('#cfg_user')) $('#cfg_user').value = creds.user;
@@ -1079,9 +932,13 @@ function closeSettings(){
 function toggleAcc(id){ 
   const targetAcc = document.getElementById(id);
   if(!targetAcc) return;
+  
   const isOpen = targetAcc.classList.contains('open');
   $$('.accordion').forEach(acc => acc.classList.remove('open'));
-  if(!isOpen) targetAcc.classList.add('open');
+  
+  if(!isOpen) {
+    targetAcc.classList.add('open');
+  }
 }
 
 function savePrintSettings() {
@@ -1092,15 +949,14 @@ function savePrintSettings() {
 }
 
 function init(){
-  checkAndFixOldCredentials();
+  checkAndFixOldCredentials(); // تنظيف تلقائي للبيانات القديمة
+  loadLS();
   loadHeaderData();
   loadLogo();
   loadPE();
-  
-  // ⚡ جلب وقراءة ملف StudentGuidance.xls تلقائياً بنفس طريقة الاستيراد ليراها جميع الزائرين
-  autoLoadDefaultFile();
+  refreshFiltersOptions();
+  updateAuthUI();
 }
-
 init();
 </script>
 </body>
