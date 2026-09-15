@@ -223,7 +223,6 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     <div class="logo-wrap">
       <img id="schoolLogo" alt="شعار المدرسة" class="hidden">
       <button class="btn" id="authBtn" onclick="toggleAuth()">🔐 دخول المشرف</button>
-      <!-- لوحة الإعدادات متاحة للجميع للتحكم بالطباعة -->
       <button class="btn" onclick="openSettings()">⚙️ الإعدادات</button>
     </div>
   </header>
@@ -270,7 +269,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- نموذج الإضافة/التعديل (للمشرف فقط) -->
+  <!-- نموذج الإضافة/التعديل (لالمشرف فقط) -->
   <div class="card hidden admin-only" id="addFormCard">
     <h3 id="formTitle" style="margin-top:0">➕ إضافة طالب جديد</h3>
     <div class="grid-2">
@@ -292,7 +291,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- رسائل واتساب الجماعية (مخفية تماماً عن الزائر ومتاحة للمشرف فقط) -->
+  <!-- رسائل واتساب الجماعية (للمشرف فقط) -->
   <div class="card admin-only hidden" id="waSection">
     <h3 style="margin-top:0">الرسائل الجماعية واتساب</h3>
     <div class="grid-2">
@@ -330,12 +329,12 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     <div id="bulkLinks" class="grid-fit hidden"></div>
   </div>
 
-  <!-- ✅ إحصاءات سريعة (تم نقلها أعلى الجدول) -->
+  <!-- ✅ الإحصاءات في الأعلى -->
   <div class="card" style="margin-bottom: 12px;">
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-      <span class="tag" style="background:#eef2ff;color:#1e3a8a">إجمالي: <b id="countTotal">0</b></span>
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a">إجمالي الطلاب بالمدرسة: <b id="countTotal">0</b></span>
       <span class="tag admin-only hidden" style="background:#eef2ff;color:#1e3a8a">محدد: <b id="countSelected">0</b></span>
-      <span class="tag" style="background:#eef2ff;color:#1e3a8a">مطابقة: <b id="countFiltered">0</b></span>
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a" id="filterTagLabel">مطابقة: <b id="countFiltered">0</b></span>
     </div>
   </div>
 
@@ -416,7 +415,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 🔐 تغيير بيانات المشرف (مخفية إلا للمشرف) -->
+  <!-- 🔐 تغيير بيانات المشرف -->
   <div class="accordion admin-only hidden" id="acc-auth">
     <div class="acc-head" onclick="toggleAcc('acc-auth')">🔐 بيانات دخول المشرف</div>
     <div class="acc-body">
@@ -428,7 +427,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 🖼 الشعار (للمشرف) -->
+  <!-- 🖼 الشعار -->
   <div class="accordion admin-only hidden" id="acc-logo">
     <div class="acc-head" onclick="toggleAcc('acc-logo')">🖼️ الشعار</div>
     <div class="acc-body">
@@ -445,7 +444,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 📄 إعدادات الترويسة (للمشرف) -->
+  <!-- 📄 إعدادات الترويسة -->
   <div class="accordion admin-only hidden" id="acc-header">
     <div class="acc-head" onclick="toggleAcc('acc-header')">📄 إعدادات الترويسة</div>
     <div class="acc-body">
@@ -547,7 +546,7 @@ function saveAdminCredentials() {
 let students=[], editingUid=null, searchText='', gradeFilter='', classFilter='';
 let selectedUids=new Set();
 let settings={hijriAdjust:0, schoolStart:'07:15'};
-let pePrefs=null; let schoolLogo=null;
+let schoolLogo=null;
 let headerData={country:'المملكة العربية السعودية',ministry:'وزارة التعليم',directorate:'الإدارة العامة للتعليم بمحافظة جدة',school:'ثانوية الأمير عبدالمجيد الأولى بنين'};
 
 /* ===== أدوات ===== */
@@ -599,7 +598,7 @@ function applyClassOptions(){const classSel=$('#classFilter');if(!classSel)retur
 function filterFn(s){const q=(searchText||'').trim().toLowerCase();const mt=!q||((s.name||'').toLowerCase().includes(q)||String(s.id||'').toLowerCase().includes(q));const mg=!gradeFilter||(String(s.grade||'').trim()===gradeFilter);const mc=!classFilter||(String(s.class||'').trim()===classFilter);return mt&&mg&&mc}
 function getFiltered(){return students.filter(filterFn)}
 
-/* ===== رسم الجدول ===== */
+/* ===== رسم الجدول والإحصاءات الديناميكية ===== */
 function render(){
   const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';
   const filtered=getFiltered();
@@ -637,9 +636,30 @@ ${checkCell}
     tbody.appendChild(tr);
   });
   
-  $('#countTotal').textContent=students.length;
-  $('#countFiltered').textContent=filtered.length;
-  $('#countSelected').textContent=selectedUids.size;
+  // 1. تحديث إجمالي الطلاب بالمدرسة
+  $('#countTotal').textContent = students.length;
+  
+  // 2. تحديث نص المطابقة ديناميكياً حسب الفلترة المختارة
+  const labelEl = $('#filterTagLabel');
+  let matchText = 'مطابقة';
+  
+  if (gradeFilter && classFilter) {
+    matchText = `مطابقة (${gradeFilter} - ${classFilter})`;
+  } else if (gradeFilter) {
+    matchText = `مطابقة (${gradeFilter})`;
+  } else if (classFilter) {
+    matchText = `مطابقة (فصل ${classFilter})`;
+  } else if (searchText.trim()) {
+    matchText = `مطابقة البحث`;
+  } else {
+    matchText = `مطابقة الكل`;
+  }
+  
+  if (labelEl) {
+    labelEl.innerHTML = `${matchText}: <b id="countFiltered">${filtered.length}</b>`;
+  }
+
+  $('#countSelected').textContent = selectedUids.size;
 }
 
 /* ===== CRUD ===== */
