@@ -274,7 +274,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- نموذج الإضافة/التعديل (للمشرف فقط) -->
+  <!-- نموذج الإضافة/التعديل (لالمشرف فقط) -->
   <div class="card hidden admin-only" id="addFormCard">
     <h3 id="formTitle" style="margin-top:0">➕ إضافة طالب جديد</h3>
     <div class="grid-2">
@@ -449,7 +449,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 🔐 تغيير بيانات المشرف (لالمشرف فقط) -->
+  <!-- 🔐 تغيير بيانات المشرف (للمشرف فقط) -->
   <div class="accordion admin-only hidden" id="acc-auth">
     <div class="acc-head" onclick="toggleAcc('acc-auth')">🔐 بيانات دخول المشرف</div>
     <div class="acc-body">
@@ -461,7 +461,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 🖼 الشعار (لالمشرف) -->
+  <!-- 🖼 الشعار (للمشرف) -->
   <div class="accordion admin-only hidden" id="acc-logo">
     <div class="acc-head" onclick="toggleAcc('acc-logo')">🖼️ الشعار</div>
     <div class="acc-body">
@@ -478,7 +478,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 📄 إعدادات الترويسة (لالمشرف) -->
+  <!-- 📄 إعدادات الترويسة (للمشرف) -->
   <div class="accordion admin-only hidden" id="acc-header">
     <div class="acc-head" onclick="toggleAcc('acc-header')">📄 إعدادات الترويسة</div>
     <div class="acc-body">
@@ -502,31 +502,14 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 
 <script>
 /* ===== تشفير الأمان ===== */
-const _0x5a1a = "YWJva2FsZWQ="; // abokaled
-const _0x3b8c = "Wm9vbTY0MTA="; // Zoom6410
+const _0x5a1a = "YWJva2FsZWQ=";
+const _0x3b8c = "Wm9vbTY0MTA=";
 
 const LS_KEY='students_db_v1', SETTINGS_KEY='students_settings_v1', TPL_KEY='messageTemplates_v1', PE_KEY='printExport_prefs_v1', LOGO_KEY='school_logo_base64_v1';
 const REC_KEY = 'attendance_records_v1'; const HDR_KEY = 'print_header_v1';
 const AUTH_KEY = 'admin_auth_credentials_v1';
 
 let isAdmin = false;
-
-/* ✅ كود التحديث والتنظيف التلقائي للحساب القديم (Migration Fix) */
-function checkAndFixOldCredentials() {
-  try {
-    const rawData = localStorage.getItem(AUTH_KEY);
-    if (rawData) {
-      const parsed = JSON.parse(rawData);
-      // إذا كانت البيانات مخزنة بصيغة قديمة غير مشفرة أو تحتوي على admin القديم
-      if (parsed.user === 'admin' || (parsed.u && atob(parsed.u) === 'admin')) {
-        localStorage.removeItem(AUTH_KEY);
-      }
-    }
-  } catch(e) {
-    localStorage.removeItem(AUTH_KEY);
-  }
-}
-
 function getAdminCredentials() {
   try {
     const data = JSON.parse(localStorage.getItem(AUTH_KEY));
@@ -929,13 +912,17 @@ function closeSettings(){
   $('#settingsOverlay').style.display='none';
 }
 
+/* التبديل الذكي: الفتح والإغلاق عند النقر المتكرر على أي قسم */
 function toggleAcc(id){ 
   const targetAcc = document.getElementById(id);
   if(!targetAcc) return;
   
   const isOpen = targetAcc.classList.contains('open');
+  
+  // إغلاق أي قسم مفتوح لترتيب الواجهة
   $$('.accordion').forEach(acc => acc.classList.remove('open'));
   
+  // إذا لم يكن مفتوحاً، قم بفتحه
   if(!isOpen) {
     targetAcc.classList.add('open');
   }
@@ -949,7 +936,6 @@ function savePrintSettings() {
 }
 
 function init(){
-  checkAndFixOldCredentials(); // تنظيف تلقائي للبيانات القديمة
   loadLS();
   loadHeaderData();
   loadLogo();
