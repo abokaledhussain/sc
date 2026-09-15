@@ -717,7 +717,7 @@ function clearForm(){editingUid=null;fillForm({});$('#formTitle').textContent='�
 function submitForm(){const s={name:$('#f_name').value.trim(),phone:$('#f_phone').value.trim(),id:$('#f_id').value.trim(),grade:$('#f_grade').value.trim(),class:$('#f_class').value.trim()};if(!s.name){alert('يرجى إدخال اسم الطالب');return}if(editingUid){const i=students.findIndex(x=>x.uid===editingUid);if(i>-1)students[i]={...students[i],...s}}else students.unshift({uid:uid(),...s});saveLS();clearForm()}
 function deleteByUid(u){const i=students.findIndex(x=>x.uid===u);if(i>-1){students.splice(i,1);saveLS()}}
 
-/* ✅ دالة تحويل وتحليل بيانات Excel من مصفوفة ArrayBuffer */
+/* ✅ دالة تحويل وتحليل بيانات Excel من مصفوفة ArrayBuffer بالتنسيق الجديد المطلوب */
 function parseExcelData(arrayBuffer) {
   const data = new Uint8Array(arrayBuffer);
   const wb = XLSX.read(data, { type: 'array' });
@@ -769,7 +769,7 @@ function parseExcelData(arrayBuffer) {
 async function loadDefaultExcelFile() {
   try {
     const response = await fetch('StudentGuidance.xls');
-    if (!response.ok) return; // إن لم يكن الملف موجوداً في المسار يتجاهل الأمر
+    if (!response.ok) return; 
     const arrayBuffer = await response.arrayBuffer();
     const imported = parseExcelData(arrayBuffer);
     if (imported.length > 0) {
@@ -782,7 +782,7 @@ async function loadDefaultExcelFile() {
   }
 }
 
-/* ✅ استيراد Excel اليدوي عبر الزر */
+/* ✅ استيراد Excel اليدوي عبر الزر بالتنسيق الجديد */
 document.getElementById('excelInput').addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   e.target.value = '';
@@ -1248,7 +1248,6 @@ document.getElementById('templateSelect').addEventListener('change',applyTemplat
 async function init(){ loadSettings(); loadLS(); loadTemplates(); loadPE(); loadLogo(); loadHeaderData();
   const pp = JSON.parse(localStorage.getItem(PRO_KEY)||'null'); if(pp) pro={...pro,...pp,thr:{...pro.thr,...(pp.thr||{})}};
   
-  // محاولة التحميل التلقائي إذا كانت التخزينات المحلية فارغة
   if(!students || students.length === 0){
     await loadDefaultExcelFile();
   }
