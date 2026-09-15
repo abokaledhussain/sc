@@ -90,7 +90,7 @@ input, select, textarea {
 textarea {min-height:110px}
 .small {color:var(--muted); font-size:12px}
 .grid-2 {display:grid; grid-template-columns:1fr 1fr; gap:12px}
-.grid-fit {display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px}
+.grid-fit {display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:8px}
 
 /* ✅ جدول الطلاب */
 .table-card {overflow:auto; border-radius:14px}
@@ -108,20 +108,31 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 .hidden {display:none !important}
 .nowrap {white-space:nowrap}
 .tag {border-radius:999px; padding:2px 8px; font-size:12px}
+.badge-warn {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fed7aa;
+  border-radius:999px;
+  padding:2px 8px;
+  font-size:12px;
+}
 
-/* ✅ لوحة الإعدادات متجاوبة مع الجوالات */
+/* ✅ لوحة الإعدادات */
 .settings-panel {
   position:fixed;
   top:0;
-  right:-100%;
-  width: min(420px, 90vw);
+  right:-420px;
+  width:420px;
   height:100vh;
   background:#fff;
   box-shadow:-3px 0 14px rgba(0,0,0,.12);
   border-left:1px solid var(--border);
-  transition:.3s ease-in-out;
+  transition:.3s;
   z-index:1000;
-  padding:16px;
+  padding:20px;
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -134,19 +145,17 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   justify-content:space-between;
   align-items:center;
   margin-bottom:4px;
-  padding-bottom:8px;
-  border-bottom:1px solid var(--border);
 }
 .close-settings {
   cursor:pointer;
   background:none;
   border:none;
-  font-size:22px;
+  font-size:20px;
   color:#666;
 }
 
-/* ✅ Accordion مغلق افتراضياً */
-.accordion {border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff; margin-bottom:6px}
+/* ✅ Accordion */
+.accordion {border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff}
 .acc-head {
   padding:12px 14px;
   background:#f8fafc;
@@ -154,26 +163,17 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   font-weight:700;
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  user-select:none;
+  gap:8px;
 }
-.acc-head::after {
-  content:'▼';
-  font-size:12px;
-  color:var(--muted);
-  transition:.2s;
-}
-.accordion.open .acc-head::after {
-  transform:rotate(180deg);
-}
-.acc-body {padding:12px 14px; display:none; background:#fff}
+.acc-body {padding:12px 14px; display:none}
 .accordion.open .acc-body {display:block}
 .scrollable-acc-content {
   overflow-y:auto;
-  max-height:55vh;
-  padding-inline-end:6px;
+  max-height:60vh;
+  padding-inline-end:10px;
 }
 
+/* ✅ ترويسة الطباعة البسيطة */
 .header-plain {
   width:100%;
   display:flex;
@@ -190,6 +190,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 .logo-preview{display:flex;align-items:center;gap:10px}
 .logo-preview img{max-height:56px;max-width:140px;border:1px dashed var(--border);padding:6px;border-radius:8px;background:#fafafa}
 
+/* نوافذ مودال عامة */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;justify-content:center;align-items:center}
 .modal-content{background:#fff;width:min(980px,94vw);max-height:86vh;overflow:auto;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
 .close{float:left;cursor:pointer;font-size:26px;color:#555}
@@ -210,12 +211,6 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 }
 .icon-btn.btn { background: transparent; border: none; }
 .icon-btn:hover { background: rgba(0,0,0,0.04); border-radius: 6px; }
-
-@media (max-width: 600px) {
-  .grid-2 { grid-template-columns: 1fr; }
-  header { flex-direction: column; align-items: flex-start; }
-  .logo-wrap { width: 100%; justify-content: space-between; margin-top: 8px; }
-}
 </style>
 </head>
 <body>
@@ -248,7 +243,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
       <button class="btn admin-only hidden" id="exportBtn">💾 تنزيل نسخة احتياطية</button>
       <button class="btn admin-only hidden" id="clearBtn" style="color:var(--warn)">🧹 تفريغ التخزين</button>
 
-      <div style="flex:1;min-width:200px">
+      <div style="flex:1;min-width:240px">
         <input id="searchBox" type="text" placeholder="🔎 بحث بالاسم أو رقم الهوية...">
       </div>
 
@@ -334,7 +329,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     <div id="bulkLinks" class="grid-fit hidden"></div>
   </div>
 
-  <!-- الإحصاءات في الأعلى -->
+  <!-- ✅ الإحصاءات في الأعلى -->
   <div class="card" style="margin-bottom: 12px;">
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       <span class="tag" style="background:#eef2ff;color:#1e3a8a">إجمالي الطلاب بالمدرسة: <b id="countTotal">0</b></span>
@@ -372,7 +367,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
       <div>
         <label>اسم المستخدم</label>
-        <input type="text" id="loginUser" placeholder="اسم المستخدم">
+        <input type="text" id="loginUser" placeholder="admin">
       </div>
       <div>
         <label>كلمة المرور</label>
@@ -383,47 +378,18 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   </div>
 </div>
 
-<!-- لوحة الإعدادات الجانبية المتجاوبة -->
+<!-- لوحة الإعدادات الجانبية -->
 <div id="settingsPanel" class="settings-panel">
   <div class="settings-header">
-    <h3 style="margin:0;font-size:18px">⚙️ الإعدادات والطباعة</h3>
+    <h3>⚙️ الإعدادات</h3>
     <button class="close-settings" onclick="closeSettings()">✖</button>
   </div>
 
-  <!-- 🖨 إعدادات طباعة كشوفات الطلاب العادية -->
-  <div class="accordion" id="acc-std-print">
-    <div class="acc-head" onclick="toggleAcc('acc-std-print')">📋 أعمدة كشف الطلاب العادي</div>
-    <div class="acc-body">
-      <div class="scrollable-acc-content">
-        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_name" checked> اسم الطالب</label>
-        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_phone" checked> الجوال</label>
-        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_id" checked> رقم الهوية</label>
-        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_grade" checked> الصف</label>
-        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_class" checked> الفصل</label>
-        <div class="grid-fit" style="margin-top:10px">
-          <button class="btn" onclick="savePE()" style="background:var(--ok);color:#fff">💾 حفظ الخيارات</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- 🖨 إعدادات طباعة كشف المتابعة -->
-  <div class="accordion" id="acc-print">
-    <div class="acc-head" onclick="toggleAcc('acc-print')">🖨 إعدادات كشف المتابعة</div>
+  <div class="accordion open" id="acc-print">
+    <div class="acc-head" onclick="toggleAcc('acc-print')">🖨 إعدادات طباعة كشف المتابعة</div>
     <div class="acc-body">
       <div class="scrollable-acc-content">
-        <div style="background:#f8fafc;padding:8px;border-radius:8px;margin-bottom:10px">
-          <b class="small">إظهار / إخفاء المربعات والأعمدة:</b>
-          <label style="display:block;margin-top:4px"><input type="checkbox" id="chk_show_boxes" checked> إظهار مربعات المتابعة (☐)</label>
-          <hr style="margin:6px 0">
-          <label style="display:block"><input type="checkbox" id="chk_col_behavior" checked> إظهار عمود السلوك</label>
-          <label style="display:block"><input type="checkbox" id="chk_col_book" checked> إظهار عمود الكتاب</label>
-          <label style="display:block"><input type="checkbox" id="chk_col_homework" checked> إظهار عمود الواجبات</label>
-          <label style="display:block"><input type="checkbox" id="chk_col_participation" checked> إظهار عمود المشاركة</label>
-          <label style="display:block"><input type="checkbox" id="chk_col_period" checked> إظهار عمود الفترة</label>
-          <label style="display:block"><input type="checkbox" id="chk_col_total" checked> إظهار عمود المجموع</label>
-        </div>
-
         <label>📝 اسم عمود السلوك</label>
         <input type="text" id="col_behavior" value="السلوك">
         <label>📚 اسم عمود الكتاب</label>
@@ -449,7 +415,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 🔐 تغيير بيانات المشرف (للمشرف فقط) -->
+  <!-- 🔐 تغيير بيانات المشرف -->
   <div class="accordion admin-only hidden" id="acc-auth">
     <div class="acc-head" onclick="toggleAcc('acc-auth')">🔐 بيانات دخول المشرف</div>
     <div class="acc-body">
@@ -461,7 +427,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 🖼 الشعار (للمشرف) -->
+  <!-- 🖼 الشعار -->
   <div class="accordion admin-only hidden" id="acc-logo">
     <div class="acc-head" onclick="toggleAcc('acc-logo')">🖼️ الشعار</div>
     <div class="acc-body">
@@ -478,7 +444,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- 📄 إعدادات الترويسة (للمشرف) -->
+  <!-- 📄 إعدادات الترويسة -->
   <div class="accordion admin-only hidden" id="acc-header">
     <div class="acc-head" onclick="toggleAcc('acc-header')">📄 إعدادات الترويسة</div>
     <div class="acc-body">
@@ -498,31 +464,26 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   </div>
 </div>
 
+<!-- خلفية إغلاق لوحة الإعدادات -->
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.15);display:none;z-index:999" onclick="closeSettings()"></div>
 
 <script>
-/* ===== تشفير الأمان ===== */
-const _0x5a1a = "YWJva2FsZWQ=";
-const _0x3b8c = "Wm9vbTY0MTA=";
-
+/* ===== مفاتيح التخزين ===== */
 const LS_KEY='students_db_v1', SETTINGS_KEY='students_settings_v1', TPL_KEY='messageTemplates_v1', PE_KEY='printExport_prefs_v1', LOGO_KEY='school_logo_base64_v1';
-const REC_KEY = 'attendance_records_v1'; const HDR_KEY = 'print_header_v1';
+const REC_KEY = 'attendance_records_v1'; const PRO_KEY = 'pro_options_v1'; const HDR_KEY = 'print_header_v1';
 const AUTH_KEY = 'admin_auth_credentials_v1';
 
+/* ===== الأمان والدخول ===== */
 let isAdmin = false;
 function getAdminCredentials() {
   try {
-    const data = JSON.parse(localStorage.getItem(AUTH_KEY));
-    if(data && data.u && data.p) {
-      return { user: atob(data.u), pass: atob(data.p) };
-    }
-    return { user: atob(_0x5a1a), pass: atob(_0x3b8c) };
-  } catch { return { user: atob(_0x5a1a), pass: atob(_0x3b8c) }; }
+    return JSON.parse(localStorage.getItem(AUTH_KEY)) || { user: 'admin', pass: '1234' };
+  } catch { return { user: 'admin', pass: '1234' }; }
 }
 
 function updateAuthUI() {
   const authBtn = $('#authBtn');
-  const adminElems = $$('.admin-only');
+  const adminElems = $$( '.admin-only' );
   
   if (isAdmin) {
     authBtn.textContent = '🚪 خروج المشرف';
@@ -577,7 +538,7 @@ function saveAdminCredentials() {
   const u = $('#cfg_user').value.trim();
   const p = $('#cfg_pass').value.trim();
   if (!u || !p) { alert('يرجى ملء كافة حقول الحساب!'); return; }
-  localStorage.setItem(AUTH_KEY, JSON.stringify({ u: btoa(u), p: btoa(p) }));
+  localStorage.setItem(AUTH_KEY, JSON.stringify({ user: u, pass: p }));
   alert('تم تحديث بيانات دخول المشرف بنجاح!');
 }
 
@@ -585,17 +546,20 @@ function saveAdminCredentials() {
 let students=[], editingUid=null, searchText='', gradeFilter='', classFilter='';
 let selectedUids=new Set();
 let settings={hijriAdjust:0, schoolStart:'07:15'};
-let pePrefs=null; let schoolLogo=null;
+let schoolLogo=null;
 let headerData={country:'المملكة العربية السعودية',ministry:'وزارة التعليم',directorate:'الإدارة العامة للتعليم بمحافظة جدة',school:'ثانوية الأمير عبدالمجيد الأولى بنين'};
 
+/* ===== أدوات ===== */
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const uid=()=> 'S'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
 const escapeHtml=t=>String(t??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
 const localeSort=(a,b)=>a.localeCompare(b,'ar',{numeric:true,sensitivity:'base'});
 
+/* ===== واتساب ===== */
 function toSaudiWhatsApp(numRaw){if(!numRaw)return'';let n=String(numRaw).replace(/\D+/g,'');if(n.startsWith('00966'))n=n.replace(/^00966/,'');if(n.startsWith('966'))n=n.replace(/^966/,'');if(n.startsWith('0'))n=n.slice(1);return '+966'+n}
 function waLink(phone,text){const p=toSaudiWhatsApp(phone).replace(/^\+/,'');return `https://wa.me/${p}?text=${encodeURIComponent(text||'')}`}
 
+/* ===== اليوم + التاريخ ===== */
 function todayInfo(dateObj){
   const d = dateObj? new Date(dateObj): new Date();
   const days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
@@ -617,50 +581,24 @@ function todayInfo(dateObj){
   return {day,miladi,hijri,time,fullDate:`${miladi} الموافق ${hijri}`};
 }
 
-function defaultPE(){return{columns:{name:true,phone:true,id:true,grade:true,class:true}}}
-function loadPE(){
-  try{pePrefs=JSON.parse(localStorage.getItem(PE_KEY)||'null')||defaultPE()}catch{pePrefs=defaultPE()}
-  const c = pePrefs.columns || {};
-  if($('#col_name')) $('#col_name').checked = c.name !== false;
-  if($('#col_phone')) $('#col_phone').checked = c.phone !== false;
-  if($('#col_id')) $('#col_id').checked = c.id !== false;
-  if($('#col_grade')) $('#col_grade').checked = c.grade !== false;
-  if($('#col_class')) $('#col_class').checked = c.class !== false;
-}
-function savePE(){
-  pePrefs = {
-    columns: {
-      name: $('#col_name').checked,
-      phone: $('#col_phone').checked,
-      id: $('#col_id').checked,
-      grade: $('#col_grade').checked,
-      class: $('#col_class').checked
-    }
-  };
-  localStorage.setItem(PE_KEY, JSON.stringify(pePrefs));
-  alert('تم حفظ إعدادات طباعة الكشوفات العادية.');
-}
-function getSelectedColumns(){ 
-  const order=['name','phone','id','grade','class']; 
-  const labels={name:'اسم الطالب',phone:'الجوال',id:'رقم الهوية',grade:'الصف',class:'الفصل'};
-  const cols = pePrefs?.columns || defaultPE().columns;
-  return { order: order.filter(k => cols[k] !== false), labels };
-}
-
+/* ===== الشعار ===== */
 function loadLogo(){try{schoolLogo=localStorage.getItem(LOGO_KEY)||null}catch{schoolLogo=null}
   const headerImg=$('#schoolLogo');
   if(schoolLogo){headerImg.src=schoolLogo;headerImg.classList.remove('hidden');}
   else{headerImg.classList.add('hidden');}
 }
 
+/* ===== تخزين الطلاب ===== */
 function saveLS(){localStorage.setItem(LS_KEY,JSON.stringify(students));refreshFiltersOptions();render()}
 function loadLS(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'[]');students=Array.isArray(v)?v:[]}catch{students=[]}}
 
+/* ===== فلاتر ===== */
 function refreshFiltersOptions(){const gradeSel=$('#gradeFilter');if(!gradeSel)return;const grades=[...new Set(students.map(s=>(s.grade||'').trim()).filter(Boolean))].sort(localeSort);const prev=gradeFilter;gradeSel.innerHTML=`<option value="">كل الصفوف</option>`+grades.map(g=>`<option ${g===prev?'selected':''} value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');applyClassOptions();gradeFilter=$('#gradeFilter').value||'';classFilter=$('#classFilter').value||''}
 function applyClassOptions(){const classSel=$('#classFilter');if(!classSel)return;const g=$('#gradeFilter')?.value||'';let classes=[];if(g){classes=[...new Set(students.filter(s=>(s.grade||'').trim()===g).map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}else{classes=[...new Set(students.map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}const keep=classFilter;classSel.disabled=false;classSel.innerHTML=`<option value="">كل الفصول</option>`+classes.map(c=>`<option ${c===keep?'selected':''} value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('')}
 function filterFn(s){const q=(searchText||'').trim().toLowerCase();const mt=!q||((s.name||'').toLowerCase().includes(q)||String(s.id||'').toLowerCase().includes(q));const mg=!gradeFilter||(String(s.grade||'').trim()===gradeFilter);const mc=!classFilter||(String(s.class||'').trim()===classFilter);return mt&&mg&&mc}
 function getFiltered(){return students.filter(filterFn)}
 
+/* ===== رسم الجدول والإحصاءات الديناميكية ===== */
 function render(){
   const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';
   const filtered=getFiltered();
@@ -671,12 +609,14 @@ function render(){
     let nameHtml=`<div class="row-meta"><b>${escapeHtml(s.name||'')}</b></div>`;
     const waUrl=waLink(s.phone,`السلام عليكم ولي أمر ${s.name??''}`);
     
+    // الأزرار المتاحة للمشرف فقط
     const adminBtns = isAdmin ? `
       <button class="btn stats-btn" style="padding:6px 9px" data-act="stats" data-uid="${s.uid}" title="إحصائيات">📊</button>
       <button class="btn" style="padding:6px 9px" data-act="edit" data-uid="${s.uid}" title="تعديل">✏</button>
       <button class="btn" style="padding:6px 9px" data-act="del" data-uid="${s.uid}" title="حذف">🗑</button>
     ` : '';
 
+    // خانة الاختيار للمشرف فقط
     const checkCell = isAdmin ? `<td><input type="checkbox" class="rowSel" data-uid="${s.uid}" ${checked}></td>` : '';
 
     tr.innerHTML=`
@@ -696,8 +636,10 @@ ${checkCell}
     tbody.appendChild(tr);
   });
   
+  // 1. تحديث إجمالي الطلاب بالمدرسة
   $('#countTotal').textContent = students.length;
   
+  // 2. تحديث نص المطابقة ديناميكياً حسب الفلترة المختارة
   const labelEl = $('#filterTagLabel');
   let matchText = 'مطابقة';
   
@@ -720,11 +662,13 @@ ${checkCell}
   $('#countSelected').textContent = selectedUids.size;
 }
 
+/* ===== CRUD ===== */
 function fillForm(s){$('#f_name').value=s?.name||'';$('#f_phone').value=s?.phone||'';$('#f_id').value=s?.id||'';$('#f_grade').value=s?.grade||'';$('#f_class').value=s?.class||''}
 function clearForm(){editingUid=null;fillForm({});$('#formTitle').textContent='➕ إضافة طالب جديد';$('#cancelEditBtn').classList.add('hidden');$('#saveBtn').textContent='حفظ'}
 function submitForm(){if(!isAdmin)return;const s={name:$('#f_name').value.trim(),phone:$('#f_phone').value.trim(),id:$('#f_id').value.trim(),grade:$('#f_grade').value.trim(),class:$('#f_class').value.trim()};if(!s.name){alert('يرجى إدخال اسم الطالب');return}if(editingUid){const i=students.findIndex(x=>x.uid===editingUid);if(i>-1)students[i]={...students[i],...s}}else students.unshift({uid:uid(),...s});saveLS();clearForm()}
 function deleteByUid(u){if(!isAdmin)return;const i=students.findIndex(x=>x.uid===u);if(i>-1){students.splice(i,1);saveLS()}}
 
+/* ===== أحداث عامة ===== */
 document.getElementById('saveBtn').addEventListener('click',submitForm);
 document.getElementById('cancelEditBtn').addEventListener('click',clearForm);
 document.getElementById('searchBox').addEventListener('input',e=>{searchText=e.target.value||'';render()});
@@ -738,11 +682,12 @@ document.addEventListener('change',e=>{if(e.target.classList.contains('rowSel'))
 document.addEventListener('click',e=>{
   const b=e.target.closest('button[data-act]'); if(!b) return;
   const act=b.dataset.act, u=b.dataset.uid;
-  if(act==='stats' && isAdmin){ alert('ميزة الإحصائيات مفعلة للمشرف'); }
+  if(act==='stats' && isAdmin){ showStats(u); }
   else if(act==='edit' && isAdmin){const s=students.find(x=>x.uid===u); if(s){editingUid=u;fillForm(s);$('#formTitle').textContent='✏ تعديل بيانات الطالب';$('#cancelEditBtn').classList.remove('hidden');$('#saveBtn').textContent='تحديث'; if($('#addFormCard').classList.contains('hidden')) $('#addFormCard').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'})}}
   else if(act==='del' && isAdmin){ if(confirm('حذف هذا الطالب؟')) deleteByUid(u); }
 });
 
+/* ===== الترويسة السادة للطباعة ===== */
 function loadHeaderData(){
   try{ const v=JSON.parse(localStorage.getItem(HDR_KEY)||'null'); if(v&&typeof v==='object'){ headerData={...headerData,...v}; } }catch{}
   if($('#hdr_country')) $('#hdr_country').value = headerData.country||'';
@@ -767,11 +712,12 @@ function buildOfficialHeaderHTML(){
   <div class="header-date">التاريخ: ${t.hijri} الموافق ${t.miladi}</div>`;
 }
 
+/* ===== طباعة وتصدير الكشوفات ===== */
 function printTableOnly(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لطباعتها');return}
   const t=todayInfo(), grade=gradeFilter||'كل الصفوف', cls=classFilter||'كل الفصول';
-  const {order, labels} = getSelectedColumns();
-  if(!order.length){alert('يرجى تحديد عمود واحد على الأقل للطباعة من الإعدادات!');return}
+  const order=['name','phone','id','grade','class'];
+  const labels={name:'اسم الطالب',phone:'الجوال',id:'رقم الهوية',grade:'الصف',class:'الفصل'};
   const thead = `<tr><th>الرقم</th>${order.map(k=>`<th>${labels[k]}</th>`).join('')}</tr>`;
   const rows  = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
   const header = buildOfficialHeaderHTML();
@@ -789,8 +735,8 @@ document.getElementById('printBtn').addEventListener('click',printTableOnly);
 
 function exportFilteredExcel(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لتصديرها.');return}
-  const {order, labels} = getSelectedColumns();
-  if(!order.length){alert('يرجى تحديد عمود واحد على الأقل للتصدير من الإعدادات!');return}
+  const order=['name','phone','id','grade','class'];
+  const labels={name:'اسم الطالب',phone:'الجوال',id:'رقم الهوية',grade:'الصف',class:'الفصل'};
   const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = s[k] || ''; }); return obj; });
   const ws = XLSX.utils.json_to_sheet(rows);
   const t=todayInfo();
@@ -805,30 +751,16 @@ function printFilteredGradeReport() {
     if (!data.length) data = students;
     if (!data.length) { alert("لا توجد بيانات طلاب للطباعة"); return; }
 
-    const showBoxes = $('#chk_show_boxes')?.checked !== false;
-    const colsVis = {
-      behavior: $('#chk_col_behavior')?.checked !== false,
-      book: $('#chk_col_book')?.checked !== false,
-      homework: $('#chk_col_homework')?.checked !== false,
-      participation: $('#chk_col_participation')?.checked !== false,
-      period: $('#chk_col_period')?.checked !== false,
-      total: $('#chk_col_total')?.checked !== false
-    };
-
-    const colLabels = {
-      behavior: $('#col_behavior')?.value || "السلوك",
-      book: $('#col_book')?.value || "الكتاب",
-      homework: $('#col_homework')?.value || "الواجبات",
-      participation: $('#col_participation')?.value || "المشاركة",
-      period: $('#col_period')?.value || "فترة"
-    };
-
+    const col_behavior = $('#col_behavior')?.value || "السلوك";
+    const col_book = $('#col_book')?.value || "الكتاب";
+    const col_homework = $('#col_homework')?.value || "الواجبات";
+    const col_participation = $('#col_participation')?.value || "المشاركة";
+    const col_period = $('#col_period')?.value || "فترة";
     const fontSize = parseInt($('#print_font_size')?.value) || 10;
     const rowHeight = parseInt($('#row_height')?.value) || 13;
     const boxCount = parseInt($('#box_count')?.value) || 10;
 
     function buildBoxes(count) {
-        if (!showBoxes) return "";
         let row1 = "", row2 = "";
         let half = Math.ceil(count / 2);
         for (let i = 0; i < count; i++) {
@@ -854,24 +786,19 @@ function printFilteredGradeReport() {
         <div style="font-size:${fontSize - 1}px;">التاريخ: ${t.hijri} الموافق ${t.miladi}</div>
     </div>`;
 
-    let ths = `<th>م</th><th>اسم الطالب</th>`;
-    if(colsVis.behavior) ths += `<th>${colLabels.behavior}</th>`;
-    if(colsVis.book) ths += `<th>${colLabels.book}</th>`;
-    if(colsVis.homework) ths += `<th>${colLabels.homework}</th>`;
-    if(colsVis.participation) ths += `<th>${colLabels.participation}</th>`;
-    if(colsVis.period) ths += `<th>${colLabels.period}</th>`;
-    if(colsVis.total) ths += `<th>المجموع</th>`;
-
     let rows = "";
     data.forEach((s, i) => {
-        rows += `<tr><td>${i + 1}</td><td style="text-align:right;">${escapeHtml(s.name)}</td>`;
-        if(colsVis.behavior) rows += `<td>${buildBoxes(boxCount)}</td>`;
-        if(colsVis.book) rows += `<td>${buildBoxes(boxCount)}</td>`;
-        if(colsVis.homework) rows += `<td>${buildBoxes(boxCount)}</td>`;
-        if(colsVis.participation) rows += `<td>${buildBoxes(boxCount)}</td>`;
-        if(colsVis.period) rows += `<td>${buildBoxes(boxCount)}</td>`;
-        if(colsVis.total) rows += `<td>${buildBoxes(boxCount)}</td>`;
-        rows += `</tr>`;
+        rows += `
+        <tr>
+            <td>${i + 1}</td>
+            <td style="text-align:right;">${escapeHtml(s.name)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+            <td>${buildBoxes(boxCount)}</td>
+        </tr>`;
     });
 
     const html = `
@@ -887,7 +814,11 @@ function printFilteredGradeReport() {
     <body>
         ${header}
         <table>
-            <thead><tr>${ths}</tr></thead>
+            <thead>
+                <tr>
+                    <th>م</th><th>اسم الطالب</th><th>${col_behavior}</th><th>${col_book}</th><th>${col_homework}</th><th>${col_participation}</th><th>${col_period}</th><th>المجموع</th>
+                </tr>
+            </thead>
             <tbody>${rows}</tbody>
         </table>
     </body></html>`;
@@ -898,7 +829,7 @@ function printFilteredGradeReport() {
     w.onload = () => w.print();
 }
 
-/* ===== فتح وإغلاق لوحة الإعدادات والأقسام (Accordion) ===== */
+/* ===== نافذة وقوائم الإعدادات ===== */
 function openSettings(){
   const creds = getAdminCredentials();
   if($('#cfg_user')) $('#cfg_user').value = creds.user;
@@ -906,40 +837,21 @@ function openSettings(){
   $('#settingsPanel').classList.add('open');
   $('#settingsOverlay').style.display='block';
 }
-
-function closeSettings(){ 
-  $('#settingsPanel').classList.remove('open'); 
-  $('#settingsOverlay').style.display='none';
-}
-
-/* التبديل الذكي: الفتح والإغلاق عند النقر المتكرر على أي قسم */
-function toggleAcc(id){ 
-  const targetAcc = document.getElementById(id);
-  if(!targetAcc) return;
-  
-  const isOpen = targetAcc.classList.contains('open');
-  
-  // إغلاق أي قسم مفتوح لترتيب الواجهة
-  $$('.accordion').forEach(acc => acc.classList.remove('open'));
-  
-  // إذا لم يكن مفتوحاً، قم بفتحه
-  if(!isOpen) {
-    targetAcc.classList.add('open');
-  }
-}
+function closeSettings(){ $('#settingsPanel').classList.remove('open'); $('#settingsOverlay').style.display='none' }
+function toggleAcc(id){ document.getElementById(id).classList.toggle('open') }
 
 function savePrintSettings() {
     localStorage.setItem("print_font_size", document.getElementById("print_font_size").value);
     localStorage.setItem("row_height", document.getElementById("row_height").value);
     localStorage.setItem("box_count", document.getElementById("box_count").value);
-    alert("✅ تم حفظ إعدادات طباعة كشف المتابعة بنجاح");
+    alert("✅ تم حفظ إعدادات الطباعة بنجاح");
 }
 
+/* ===== التهيئة الأولية ===== */
 function init(){
   loadLS();
   loadHeaderData();
   loadLogo();
-  loadPE();
   refreshFiltersOptions();
   updateAuthUI();
 }
