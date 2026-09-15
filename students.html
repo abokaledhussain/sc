@@ -205,7 +205,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   border: none;              /* بدون حدود */
   padding: 4px;              /* مسافة داخلية صغيرة */
   margin: 0 2px;
-  font-size: 18px;          /* حجم الأيقونة - غيّره حسب الرغبة */
+  font-size: 18px;          /* حجم الأيقونة */
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -217,7 +217,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 /* منع تأثير الزر .btn العام إذا موجود: */
 .icon-btn.btn { background: transparent; border: none; }
 
-/* تلميح مرئي لطيف عند المرور (اختياري) — إذا لا تريد أي خلفية عند hover شيله */
+/* تلميح مرئي لطيف عند المرور */
 .icon-btn:hover {
   background: rgba(0,0,0,0.04);
   border-radius: 6px;
@@ -230,7 +230,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   border-radius: 6px;
 }
 
-/* حالة الأيقونة الصغيرة (مثلاً دائرة حالة خضراء بدون خلفية) */
+/* حالة الأيقونة الصغيرة */
 .status-dot {
   width: 10px;
   height: 10px;
@@ -239,7 +239,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   vertical-align: middle;
 }
 
-/* إذا تريد أن تجعل الرموز أصغر جدًا (مثلاً في جدول) */
+/* رموز أصغر */
 .icon-small { font-size: 14px; padding: 2px; }
 
 </style>
@@ -564,7 +564,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   </div>
 </div> <!-- /settingsPanel -->
 
-<!-- خلفية إغلاق لوحة الإعدادات (نسخة واحدة فقط) -->
+<!-- خلفية إغلاق لوحة الإعدادات -->
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.15);display:none;z-index:999" onclick="closeSettings()"></div>
 
 
@@ -653,7 +653,6 @@ function saveRecords(rec){localStorage.setItem(REC_KEY,JSON.stringify(rec))}
 function addRecord(uid,type,extra={}){
   if(!uid)return;const recs=loadRecords();if(!recs[uid])recs[uid]=[];
   const now=todayInfo();
-  // id: to uniquely identify the record, using a combination of timestamp and random string
   const rec={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),type,minutes:type==='delay'?computeDelayMinutes():null,date:now.miladi,hijri:now.hijri,time:String(new Date().getHours()).padStart(2,'0')+':'+String(new Date().getMinutes()).padStart(2,'0'),ts:Date.now(),...extra};
   recs[uid].push(rec);saveRecords(recs);
   if(currentStatsUid && currentStatsUid===uid){try{showStats(uid)}catch{}}
@@ -708,7 +707,7 @@ function render(){const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';co
 </td>`;
   tbody.appendChild(tr);
 });$('#countTotal').textContent=students.length;$('#countFiltered').textContent=filtered.length;updateSelectedCount()
-// تسجيل بعد الضغط على زر واتساب في الصف
+
 $$('.row-wa').forEach(a=>{a.addEventListener('click',()=>{const uid=a.getAttribute('data-uid');const tSel=$('#templateSelect')?.value||'custom';const type=(tSel==='delay'?'delay':(tSel==='absent'?'absent':'notice'));addRecord(uid,type);});});
 }
 
@@ -718,7 +717,72 @@ function clearForm(){editingUid=null;fillForm({});$('#formTitle').textContent='�
 function submitForm(){const s={name:$('#f_name').value.trim(),phone:$('#f_phone').value.trim(),id:$('#f_id').value.trim(),grade:$('#f_grade').value.trim(),class:$('#f_class').value.trim()};if(!s.name){alert('يرجى إدخال اسم الطالب');return}if(editingUid){const i=students.findIndex(x=>x.uid===editingUid);if(i>-1)students[i]={...students[i],...s}}else students.unshift({uid:uid(),...s});saveLS();clearForm()}
 function deleteByUid(u){const i=students.findIndex(x=>x.uid===u);if(i>-1){students.splice(i,1);saveLS()}}
 
-/* ✅✅ [BEGIN] استيراد Excel + تحويل رقم الصف إلى اسم الصف */
+/* ✅ دالة تحويل وتحليل بيانات Excel من مصفوفة ArrayBuffer */
+function parseExcelData(arrayBuffer) {
+  const data = new Uint8Array(arrayBuffer);
+  const wb = XLSX.read(data, { type: 'array' });
+
+  let ws = wb.Sheets[wb.SheetNames[1]] || wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+  const headerRowIndex = 3;
+  if (!rows[headerRowIndex]) return [];
+
+  const headerRow = rows[headerRowIndex].map(h => String(h || '').trim());
+
+  const col = {
+    phone: headerRow.findIndex(h => /الجوال/i.test(h)),
+    class: headerRow.findIndex(h => /الفصل/i.test(h)),
+    grade: headerRow.findIndex(h => /الصف/i.test(h)),
+    name:  headerRow.findIndex(h => /اسم الطالب/i.test(h)),
+    id:    headerRow.findIndex(h => /رقم الطالب|الهوية/i.test(h))
+  };
+
+  function convertGrade(code) {
+    code = String(code).trim();
+    if (code === "1314") return "الأول الثانوي";
+    if (code === "1416") return "الثاني الثانوي";
+    if (code === "1516") return "الثالث الثانوي";
+    return code;
+  }
+
+  let imported = [];
+  for (let i = headerRowIndex + 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || !r.length) continue;
+
+    const s = {
+      uid: uid(),
+      name:  col.name  >= 0 ? (r[col.name]  || '').toString().trim() : '',
+      phone: col.phone >= 0 ? (r[col.phone] || '').toString().trim() : '',
+      id:    col.id    >= 0 ? (r[col.id]    || '').toString().trim() : '',
+      grade: col.grade >= 0 ? convertGrade(r[col.grade]) : '',
+      class: col.class >= 0 ? (r[col.class] || '').toString().trim() : ''
+    };
+
+    if (s.name) imported.push(s);
+  }
+  return imported;
+}
+
+/* ✅ التحميل التلقائي لملف StudentGuidance.xls في نفس المسار */
+async function loadDefaultExcelFile() {
+  try {
+    const response = await fetch('StudentGuidance.xls');
+    if (!response.ok) return; // إن لم يكن الملف موجوداً في المسار يتجاهل الأمر
+    const arrayBuffer = await response.arrayBuffer();
+    const imported = parseExcelData(arrayBuffer);
+    if (imported.length > 0) {
+      students = imported;
+      saveLS();
+      console.log('✅ تم تحميل بيانات الطلاب من StudentGuidance.xls بنجاح');
+    }
+  } catch (err) {
+    console.log('لم يتم العثور على StudentGuidance.xls تلقائياً أو التعذر في قراءته');
+  }
+}
+
+/* ✅ استيراد Excel اليدوي عبر الزر */
 document.getElementById('excelInput').addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   e.target.value = '';
@@ -726,51 +790,7 @@ document.getElementById('excelInput').addEventListener('change', async (e) => {
 
   const reader = new FileReader();
   reader.onload = (ev) => {
-    const data = new Uint8Array(ev.target.result);
-    const wb = XLSX.read(data, { type: 'array' });
-
-    // ✅ تحديد الورقة (عادة الثانية في ملفات نور)
-    let ws = wb.Sheets[wb.SheetNames[1]] || wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-
-    // ✅ الصف الخامس يحتوي العناوين
-    const headerRowIndex = 3;
-    const headerRow = rows[headerRowIndex].map(h => String(h || '').trim());
-
-    // ✅ تطابق الأعمدة حسب الاسم
-    const col = {
-      phone: headerRow.findIndex(h => /الجوال/i.test(h)),
-      class: headerRow.findIndex(h => /الفصل/i.test(h)),
-      grade: headerRow.findIndex(h => /الصف/i.test(h)),  // هنا رقم الصف (1314، 1416..)
-      name:  headerRow.findIndex(h => /اسم الطالب/i.test(h)),
-      id:    headerRow.findIndex(h => /رقم الطالب|الهوية/i.test(h))
-    };
-
-    // ✅ تحويل أكواد الصفوف إلى أسماء
-    function convertGrade(code) {
-      code = String(code).trim();
-      if (code === "1314") return "الأول الثانوي";
-      if (code === "1416") return "الثاني الثانوي";
-      if (code === "1516") return "الثالث الثانوي";
-      return code; // إذا لم يكن من ضمن الأكواد، يظل كما هو
-    }
-
-    let imported = [];
-    for (let i = headerRowIndex + 1; i < rows.length; i++) {
-      const r = rows[i];
-      if (!r || !r.length) continue;
-
-      const s = {
-        uid: uid(),
-        name:  col.name  >= 0 ? (r[col.name]  || '').toString().trim() : '',
-        phone: col.phone >= 0 ? (r[col.phone] || '').toString().trim() : '',
-        id:    col.id    >= 0 ? (r[col.id]    || '').toString().trim() : '',
-        grade: col.grade >= 0 ? convertGrade(r[col.grade]) : '', // ✅ التحويل هنا
-        class: col.class >= 0 ? (r[col.class] || '').toString().trim() : ''
-      };
-
-      if (s.name) imported.push(s);
-    }
+    const imported = parseExcelData(ev.target.result);
 
     if (!imported.length) {
       alert('⚠️ لا توجد بيانات طلاب بعد الصف الخامس');
@@ -784,9 +804,8 @@ document.getElementById('excelInput').addEventListener('change', async (e) => {
 
   reader.readAsArrayBuffer(file);
 });
-/* ✅✅ [END] استيراد Excel + تحويل رقم الصف إلى اسم الصف */
 
-/* ✅✅ [BEGIN] استعادة النسخة مع الإحصائيات */
+/* ===== استعادة النسخة (JSON) ===== */
 document.getElementById('restoreInput').addEventListener('change',(e)=>{
   const f = e.target.files?.[0]; 
   e.target.value='';
@@ -798,10 +817,8 @@ document.getElementById('restoreInput').addEventListener('change',(e)=>{
       const data = JSON.parse(rd.result || '{}');
 
       if (Array.isArray(data)) {
-        // نسخة قديمة تحتوي فقط على الطلاب
         students = data;
       } else if (data.students) {
-        // نسخة حديثة تحتوي على الطلاب + الإحصائيات
         students = data.students;
         if (data.records) {
           localStorage.setItem(REC_KEY, JSON.stringify(data.records));
@@ -821,13 +838,12 @@ document.getElementById('restoreInput').addEventListener('change',(e)=>{
   };
   rd.readAsText(f);
 });
-/* ✅✅ [END] استعادة النسخة مع الإحصائيات */
 
-/* ✅✅ [BEGIN] النسخ الاحتياطي يشمل الطلاب + الإحصائيات */
+/* ===== النسخ الاحتياطي ===== */
 document.getElementById('exportBtn').addEventListener('click',()=>{
   const backupData = {
     students: students,
-    records: loadRecords()   // ← هذا يحفظ سجلات الغياب والتأخر
+    records: loadRecords()
   };
   const blob = new Blob([JSON.stringify(backupData,null,2)],{type:'application/json'});
   const a = document.createElement('a');
@@ -836,7 +852,6 @@ document.getElementById('exportBtn').addEventListener('click',()=>{
   a.click();
   URL.revokeObjectURL(a.href);
 });
-/* ✅✅ [END] النسخ الاحتياطي يشمل الطلاب + الإحصائيات */
 
 /* ===== أحداث عامة ===== */
 document.getElementById('saveBtn').addEventListener('click',submitForm);
@@ -877,7 +892,6 @@ document.getElementById('bulkWhatsAppBtn').addEventListener('click',()=>{
   const done=document.createElement('button');done.className='btn';done.style.marginTop='8px';done.textContent='✅ تم الإرسال اليدوي (مسح التحديد)';done.onclick=()=>clearSelectionsAndLinks();box.appendChild(done);
   box.classList.remove('hidden');box.scrollIntoView({behavior:'smooth',block:'center'});
 
-  // تسجيل عند الضغط على أي رابط واتساب يدوي
   $$('.bulk-wa').forEach(a=>{
     a.addEventListener('click',()=>{
       const u=a.dataset.uid, typ=a.dataset.type; addRecord(u,typ);
@@ -965,7 +979,7 @@ function printTableOnly(){
 }
 document.getElementById('printBtn').addEventListener('click',printTableOnly);
 
-/* ===== تصدير Excel مع ترويسة سادة + التاريخ ===== */
+/* ===== تصدير Excel ===== */
 function exportFilteredExcel(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لتصديرها.');return}
   const {order,labels}=getSelectedColumns(); if(!order.length){alert('لم تختر أعمدة للتصدير. يرجى التحديد من الإعدادات.');return}
@@ -979,7 +993,6 @@ function exportFilteredExcel(){
     ["التاريخ:", `${t.hijri} الموافق ${t.miladi}`, "", ""],
     [""]
   ];
-  // استخدام index للتأكد من وضع البيانات فوق رأس الجدول
   XLSX.utils.sheet_add_aoa(ws, headAoa, {origin:"A1"});
   const startRow = headAoa.length + 1;
   const ws2 = XLSX.utils.json_to_sheet(rows, {origin: {r:startRow-1, c:0}});
@@ -1025,7 +1038,7 @@ function openAllStatsPDF(){ const ids=getFiltered().map(s=>s.uid); if(!ids.lengt
   </head><body>${blocks}</body></html>`; const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{w.print();}; }
 document.getElementById('exportAllPdfBtn').addEventListener('click', openAllStatsPDF);
 
-/* ===== نافذة الإحصائيات + إضافة سجل سابق يدوي ===== */
+/* ===== نافذة الإحصائيات ===== */
 if(!document.getElementById('statsModal')){
   const modal=document.createElement('div'); modal.id='statsModal'; modal.className='modal';
   modal.innerHTML=`
@@ -1099,7 +1112,6 @@ function showStats(uid){
         <div style="display:flex;gap:4px;justify-content:center">
           <button class="btn btn-sm" style="padding:4px 8px"title="تعديل" onclick="editRecord('${r.id}')">✏️</button>
           <button class="btn btn-sm" style="padding:4px 8px"title="حذف" onclick="deleteRecord('${r.id}')">🗑️</button>
-
         </div>
       </td>
     </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#64748b">لا توجد سجلات.</td></tr>`;
@@ -1120,7 +1132,6 @@ function showStats(uid){
   $('#statsDetails').innerHTML = html;
   $('#statsModal').style.display='flex';
   
-  // ربط أدوات الفلترة/الطباعة
   $('#fltReset').onclick=()=>{$('#fltType').value='';$('#fltYear').value='';$('#fltMonth').value='';showStats(uid)};
   $('#fltType').onchange=()=>showStats(uid);
   $('#fltYear').oninput=()=>showStats(uid);
@@ -1128,33 +1139,28 @@ function showStats(uid){
   $('#btnPrintStats').onclick=()=>{ const w=window.open('','_blank'); w.document.write(`<html dir=rtl><head><meta charset=utf-8><style>body{font-family:Cairo,sans-serif;padding:20px}</style></head><body>${$('#statsDetails').innerHTML}</body></html>`); w.document.close(); w.print(); };
   $('#btnPdfStats').onclick=()=>openStatsPDFFor(uid);
   
-  // الكود المعدل لحفظ/تحديث السجل
   $('#ar_save').onclick=()=>{
     const type=$('#ar_type').value;
     const d=$('#ar_date').value; const t=$('#ar_time').value;
     const mins=Number($('#ar_minutes').value||0);
     if(!d){alert('اختر تاريخًا.');return}
     
-    // حساب التاريخ والتوقيت الهجري
     const dt = new Date(`${d}T${t||'07:30'}:00`);
     const hijriTxt = (()=>{try{const p=new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(dt);return `${p.find(x=>x.type==='day')?.value} / ${p.find(x=>x.type==='month')?.value} / ${p.find(x=>x.type==='year')?.value}هـ`}catch{return''}})();
     
-    // إعداد بيانات السجل
     const recData={type,minutes:(type==='delay'?Math.max(0,mins):null),date: String(dt.getDate()).padStart(2,'0')+' / '+String(dt.getMonth()+1).padStart(2,'0')+' / '+dt.getFullYear(),hijri:hijriTxt,time: String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'),ts: dt.getTime()};
     
     const all=loadRecords(); 
     if(!all[currentStatsUid]) all[currentStatsUid]=[]; 
     
     if(editingRecordId){
-      // وضع التعديل (Edit Mode)
       const recIndex = all[currentStatsUid].findIndex(r => r.id === editingRecordId);
       if(recIndex > -1){
         all[currentStatsUid][recIndex] = {...all[currentStatsUid][recIndex], ...recData};
       }
-      editingRecordId = null; // إنهاء وضع التعديل
+      editingRecordId = null;
       $('#ar_save').textContent = 'حفظ السجل';
     } else {
-      // وضع الإضافة (Add Mode)
       all[currentStatsUid].push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), ...recData});
     }
     
@@ -1164,7 +1170,7 @@ function showStats(uid){
   };
 }
 
-/* ===== دوال تعديل وحذف سجل الحضور (جديدة) ===== */
+/* ===== تعديل وحذف سجل الحضور ===== */
 function deleteRecord(recId){
   if(!currentStatsUid || !recId) return;
   if(!confirm('هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.')) return;
@@ -1174,7 +1180,7 @@ function deleteRecord(recId){
 
   all[currentStatsUid] = all[currentStatsUid].filter(r => r.id !== recId);
   saveRecords(all);
-  showStats(currentStatsUid); // إعادة عرض الإحصائيات المحدثة
+  showStats(currentStatsUid);
 }
 
 function editRecord(recId){
@@ -1183,30 +1189,23 @@ function editRecord(recId){
   const rec = (loadRecords()[currentStatsUid] || []).find(r => r.id === recId);
   if(!rec) return;
 
-  // إظهار نموذج الإضافة/التعديل
   $('#addRecForm').classList.remove('hidden');
 
-  // تحويل التاريخ من صيغة "DD / MM / YYYY" إلى "YYYY-MM-DD" المطلوبة لـ <input type="date">
   const dateParts = rec.date.split(' / ').map(p => p.trim());
   const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
 
-  // ملء النموذج ببيانات السجل
   $('#ar_type').value = rec.type;
   $('#ar_date').value = formattedDate;
-  // استخدام أول 5 أحرف (HH:MM) لوقت الإدخال (24 ساعة)
   $('#ar_time').value = rec.time.slice(0, 5); 
   $('#ar_minutes').value = rec.minutes || 0;
   
-  // تحديث حالة التعديل
   editingRecordId = recId;
   $('#ar_save').textContent = 'تحديث السجل';
   
-  // تحديث زر الإضافة إلى زر إلغاء التعديل
   $('#btnAddRecord').textContent = '❌ إلغاء التعديل'; 
   $('#btnAddRecord').onclick = () => {
       editingRecordId = null;
       $('#ar_save').textContent = 'حفظ السجل';
-      // إعادة تعيين زر الإضافة لوظيفته الأصلية
       $('#btnAddRecord').textContent = '➕ إضافة سجل سابق';
       $('#btnAddRecord').onclick=()=>{
         editingRecordId = null;
@@ -1219,9 +1218,8 @@ function editRecord(recId){
       };
       $('#addRecForm').classList.add('hidden');
   };
-  window.scrollTo({top:0,behavior:'smooth'}) // الانتقال لأعلى النافذة
+  window.scrollTo({top:0,behavior:'smooth'})
 }
-
 
 /* ===== إعدادات عامة ===== */
 function loadSettings(){try{const s=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');settings.hijriAdjust=Number(s.hijriAdjust||0);settings.schoolStart=s.schoolStart||'07:15'}catch{settings={hijriAdjust:0,schoolStart:'07:15'}}}
@@ -1247,30 +1245,31 @@ function applyTemplateToBox(){ const sel=$('#templateSelect')?.value; if(!sel||!
 document.getElementById('templateSelect').addEventListener('change',applyTemplateToBox);
 
 /* ===== التهيئة ===== */
-function init(){ loadSettings(); loadLS(); loadTemplates(); loadPE(); loadLogo(); loadHeaderData();
+async function init(){ loadSettings(); loadLS(); loadTemplates(); loadPE(); loadLogo(); loadHeaderData();
   const pp = JSON.parse(localStorage.getItem(PRO_KEY)||'null'); if(pp) pro={...pro,...pp,thr:{...pro.thr,...(pp.thr||{})}};
+  
+  // محاولة التحميل التلقائي إذا كانت التخزينات المحلية فارغة
+  if(!students || students.length === 0){
+    await loadDefaultExcelFile();
+  }
+  
   refreshFiltersOptions(); applyProUI(); render(); applyTemplateToBox();
   const statsModal=document.getElementById('statsModal'); if(statsModal) statsModal.style.display='none';
 }
 init();
 
 function buildGradeReportHTML(studentList) {
-    // تقبل studentList وهي قائمة الطلاب التي تم تصفيتها من الدالة الرئيسية
     if (!studentList || studentList.length === 0) return '';
 
-    // عناوين الجدول
     const headers = ["اسم الطالب", "المشاركة", "الواجبات", "الكتاب", "السلوك", "فترة 1", "المجموع"];
     
-    // فرز الطلاب بالصف ثم الفصل ثم الاسم لضمان التجميع الصحيح في التقرير
     let sortedStudents = studentList.sort((a, b) => {
         const classA = `${a.grade || ''} - ${a.class || ''}`;
         const classB = `${b.grade || ''} - ${b.class || ''}`;
         
-        // فرز حسب الصف والفصل أولاً
         if (classA < classB) return -1;
         if (classA > classB) return 1;
         
-        // ثم فرز أبجدي بالاسم
         return a.name.localeCompare(b.name, 'ar'); 
     });
 
@@ -1278,25 +1277,21 @@ function buildGradeReportHTML(studentList) {
     let tableRows = '';
     
     sortedStudents.forEach((s) => {
-        // المفتاح الفريد للصف والفصل
         const studentClass = (s.grade && s.class) ? `${s.grade} - ${s.class}` : (s.class || 'غير محدد');
 
-        // إضافة ترويسة الفصل عند تغيير الفصل
         if (studentClass !== currentClass) {
             tableRows += `<tr style="background:#f0f0f0;font-weight:bold;"><td colspan="${headers.length}">الفصل: ${studentClass}</td></tr>`;
             currentClass = studentClass;
         }
 
-        // إدراج اسم الطالب فقط، وباقي الخلايا فارغة
         const rowData = [escapeHtml(s.name)];
         for (let i = 1; i < headers.length; i++) {
-            rowData.push(''); // خلية فارغة للدرجات
+            rowData.push('');
         }
         
         tableRows += `<tr><td>${rowData.join('</td><td>')}</td></tr>`;
     });
     
-    // استخدام دالة بناء الترويسة الموجودة لديك
     const headerHtml = window.buildOfficialHeaderHTML ? buildOfficialHeaderHTML() : '';
     
     return `
@@ -1316,10 +1311,9 @@ function buildGradeReportHTML(studentList) {
         </div>
     `;
 }
-/* ✅ بداية دالة الطباعة المرتبطة بإعدادات المستخدم */
-/* ✅ بداية دالة printFilteredGradeReport النهائية */
+
+/* ===== طباعة كشف المتابعة ===== */
 function printFilteredGradeReport() {
-    // ✅ 1. جلب الطلاب حسب الفلاتر
     let data = getFiltered();
     if (!data.length) data = students;
     if (!data.length) {
@@ -1327,7 +1321,6 @@ function printFilteredGradeReport() {
         return;
     }
 
-    // ✅ 2. جلب إعدادات الطباعة من LocalStorage
     const col_behavior = localStorage.getItem("col_behavior") || "السلوك";
     const col_book = localStorage.getItem("col_book") || "الكتاب";
     const col_homework = localStorage.getItem("col_homework") || "الواجبات";
@@ -1342,7 +1335,6 @@ function printFilteredGradeReport() {
     const marginRight = parseInt(localStorage.getItem("margin_right")) || 6;
     const marginLeft = parseInt(localStorage.getItem("margin_left")) || 6;
 
-    // ✅ 3. بناء مربعات التقييم الديناميكية
     function buildBoxes(count) {
         let row1 = "", row2 = "";
         let half = Math.ceil(count / 2);
@@ -1353,7 +1345,6 @@ function printFilteredGradeReport() {
         return `<div style="line-height:1; font-size:${fontSize}px;">${row1}<br>${row2}</div>`;
     }
 
-    // ✅ 4. تجهيز الترويسة
     const t = todayInfo();
     const gradeName = gradeFilter || "غير محدد";
     const className = classFilter || "غير محدد";
@@ -1382,7 +1373,6 @@ function printFilteredGradeReport() {
         </div>
     </div>`;
 
-    // ✅ 5. بناء الصفوف
     let rows = "";
     data.forEach((s, i) => {
         rows += `
@@ -1398,7 +1388,6 @@ function printFilteredGradeReport() {
         </tr>`;
     });
 
-    // ✅ 6. صفحة الطباعة النهائية
     const html = `
     <html dir="rtl">
     <head>
@@ -1457,17 +1446,13 @@ function printFilteredGradeReport() {
     </body>
     </html>`;
 
-    // ✅ 7. فتح نافذة الطباعة
     const w = window.open('', '_blank');
     w.document.write(html);
     w.document.close();
     w.onload = () => w.print();
 }
-/* ✅ نهاية الدالة */
 
-/* ✅ نهاية دالة الطباعة */
-
-/* ✅ بداية كود حفظ إعدادات الطباعة */
+/* ===== حفظ إعدادات الطباعة ===== */
 function savePrintSettings() {
     localStorage.setItem("print_font_size", document.getElementById("print_font_size").value);
     localStorage.setItem("row_height", document.getElementById("row_height").value);
@@ -1478,24 +1463,19 @@ function savePrintSettings() {
     localStorage.setItem("margin_left", document.getElementById("margin_left").value);
     alert("✅ تم حفظ إعدادات الطباعة بنجاح");
 }
-/* ✅ نهاية كود حفظ إعدادات الطباعة */
 
-/* ✅ بداية كود فتح/طي إعدادات طباعة كشف المتابعة */
 function togglePrintSettings() {
     const box = document.getElementById("printSettingsBox");
     const title = document.querySelector('h3[onclick="togglePrintSettings()"]');
 
     if (box.style.display === "none") {
         box.style.display = "block";
-        title.innerHTML = "🖨 إعدادات طباعة كشف المتابعة ⬆"; // سهم لأعلى عند الفتح
+        title.innerHTML = "🖨 إعدادات طباعة كشف المتابعة ⬆";
     } else {
         box.style.display = "none";
-        title.innerHTML = "🖨 إعدادات طباعة كشف المتابعة ⬇"; // سهم لأسفل عند الإغلاق
+        title.innerHTML = "🖨 إعدادات طباعة كشف المتابعة ⬇";
     }
 }
-/* ✅ نهاية كود فتح/طي إعدادات طباعة كشف المتابعة */
-
-
 </script>
 </body>
 </html>
