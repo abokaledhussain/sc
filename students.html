@@ -90,7 +90,7 @@ input, select, textarea {
 textarea {min-height:110px}
 .small {color:var(--muted); font-size:12px}
 .grid-2 {display:grid; grid-template-columns:1fr 1fr; gap:12px}
-.grid-fit {display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:8px}
+.grid-fit {display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px}
 
 /* ✅ جدول الطلاب */
 .table-card {overflow:auto; border-radius:14px}
@@ -109,19 +109,19 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 .nowrap {white-space:nowrap}
 .tag {border-radius:999px; padding:2px 8px; font-size:12px}
 
-/* ✅ لوحة الإعدادات */
+/* ✅ لوحة الإعدادات متجاوبة مع الجوالات */
 .settings-panel {
   position:fixed;
   top:0;
-  right:-420px;
-  width:420px;
+  right:-100%;
+  width: min(420px, 90vw);
   height:100vh;
   background:#fff;
   box-shadow:-3px 0 14px rgba(0,0,0,.12);
   border-left:1px solid var(--border);
-  transition:.3s;
+  transition:.3s ease-in-out;
   z-index:1000;
-  padding:20px;
+  padding:16px;
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -134,17 +134,19 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   justify-content:space-between;
   align-items:center;
   margin-bottom:4px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
 }
 .close-settings {
   cursor:pointer;
   background:none;
   border:none;
-  font-size:20px;
+  font-size:22px;
   color:#666;
 }
 
-/* ✅ Accordion */
-.accordion {border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff}
+/* ✅ Accordion مغلق افتراضياً */
+.accordion {border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff; margin-bottom:6px}
 .acc-head {
   padding:12px 14px;
   background:#f8fafc;
@@ -152,14 +154,24 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   font-weight:700;
   display:flex;
   align-items:center;
-  gap:8px;
+  justify-content:space-between;
+  user-select:none;
 }
-.acc-body {padding:12px 14px; display:none}
+.acc-head::after {
+  content:'▼';
+  font-size:12px;
+  color:var(--muted);
+  transition:.2s;
+}
+.accordion.open .acc-head::after {
+  transform:rotate(180deg);
+}
+.acc-body {padding:12px 14px; display:none; background:#fff}
 .accordion.open .acc-body {display:block}
 .scrollable-acc-content {
   overflow-y:auto;
-  max-height:60vh;
-  padding-inline-end:10px;
+  max-height:55vh;
+  padding-inline-end:6px;
 }
 
 .header-plain {
@@ -198,6 +210,12 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 }
 .icon-btn.btn { background: transparent; border: none; }
 .icon-btn:hover { background: rgba(0,0,0,0.04); border-radius: 6px; }
+
+@media (max-width: 600px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  header { flex-direction: column; align-items: flex-start; }
+  .logo-wrap { width: 100%; justify-content: space-between; margin-top: 8px; }
+}
 </style>
 </head>
 <body>
@@ -230,7 +248,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
       <button class="btn admin-only hidden" id="exportBtn">💾 تنزيل نسخة احتياطية</button>
       <button class="btn admin-only hidden" id="clearBtn" style="color:var(--warn)">🧹 تفريغ التخزين</button>
 
-      <div style="flex:1;min-width:240px">
+      <div style="flex:1;min-width:200px">
         <input id="searchBox" type="text" placeholder="🔎 بحث بالاسم أو رقم الهوية...">
       </div>
 
@@ -256,7 +274,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- نموذج الإضافة/التعديل (للمشرف فقط) -->
+  <!-- نموذج الإضافة/التعديل (لالمشرف فقط) -->
   <div class="card hidden admin-only" id="addFormCard">
     <h3 id="formTitle" style="margin-top:0">➕ إضافة طالب جديد</h3>
     <div class="grid-2">
@@ -365,16 +383,16 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   </div>
 </div>
 
-<!-- لوحة الإعدادات الجانبية -->
+<!-- لوحة الإعدادات الجانبية المتجاوبة -->
 <div id="settingsPanel" class="settings-panel">
   <div class="settings-header">
-    <h3>⚙️ الإعدادات والطباعة</h3>
+    <h3 style="margin:0;font-size:18px">⚙️ الإعدادات والطباعة</h3>
     <button class="close-settings" onclick="closeSettings()">✖</button>
   </div>
 
   <!-- 🖨 إعدادات طباعة كشوفات الطلاب العادية -->
-  <div class="accordion open" id="acc-std-print">
-    <div class="acc-head" onclick="toggleAcc('acc-std-print')">📋 أعمدة طباعة وتصدير الكشف العادي</div>
+  <div class="accordion" id="acc-std-print">
+    <div class="acc-head" onclick="toggleAcc('acc-std-print')">📋 أعمدة كشف الطلاب العادي</div>
     <div class="acc-body">
       <div class="scrollable-acc-content">
         <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_name" checked> اسم الطالب</label>
@@ -391,7 +409,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 
   <!-- 🖨 إعدادات طباعة كشف المتابعة -->
   <div class="accordion" id="acc-print">
-    <div class="acc-head" onclick="toggleAcc('acc-print')">🖨 إعدادات طباعة كشف المتابعة</div>
+    <div class="acc-head" onclick="toggleAcc('acc-print')">🖨 إعدادات كشف المتابعة</div>
     <div class="acc-body">
       <div class="scrollable-acc-content">
         <div style="background:#f8fafc;padding:8px;border-radius:8px;margin-bottom:10px">
@@ -483,8 +501,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.15);display:none;z-index:999" onclick="closeSettings()"></div>
 
 <script>
-/* ===== تشفير الأمان لمستويات التطفل ===== */
-// Base64 Encrypted Auth: User="abokaled" (YWJva2FsZWQ=), Pass="Zoom6410" (Wm9vbTY0MTA=)
+/* ===== تشفير الأمان ===== */
 const _0x5a1a = "YWJva2FsZWQ=";
 const _0x3b8c = "Wm9vbTY0MTA=";
 
@@ -881,6 +898,7 @@ function printFilteredGradeReport() {
     w.onload = () => w.print();
 }
 
+/* ===== فتح وإغلاق لوحة الإعدادات والأقسام (Accordion) ===== */
 function openSettings(){
   const creds = getAdminCredentials();
   if($('#cfg_user')) $('#cfg_user').value = creds.user;
@@ -888,8 +906,27 @@ function openSettings(){
   $('#settingsPanel').classList.add('open');
   $('#settingsOverlay').style.display='block';
 }
-function closeSettings(){ $('#settingsPanel').classList.remove('open'); $('#settingsOverlay').style.display='none' }
-function toggleAcc(id){ document.getElementById(id).classList.toggle('open') }
+
+function closeSettings(){ 
+  $('#settingsPanel').classList.remove('open'); 
+  $('#settingsOverlay').style.display='none';
+}
+
+/* التبديل الذكي: الفتح والإغلاق عند النقر المتكرر على أي قسم */
+function toggleAcc(id){ 
+  const targetAcc = document.getElementById(id);
+  if(!targetAcc) return;
+  
+  const isOpen = targetAcc.classList.contains('open');
+  
+  // إغلاق أي قسم مفتوح لترتيب الواجهة
+  $$('.accordion').forEach(acc => acc.classList.remove('open'));
+  
+  // إذا لم يكن مفتوحاً، قم بفتحه
+  if(!isOpen) {
+    targetAcc.classList.add('open');
+  }
+}
 
 function savePrintSettings() {
     localStorage.setItem("print_font_size", document.getElementById("print_font_size").value);
