@@ -120,7 +120,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   font-size:12px;
 }
 
-/* ✅ لوحة الإعدادات (Accordion + Panel) */
+/* ✅ لوحة الإعدادات */
 .settings-panel {
   position:fixed;
   top:0;
@@ -186,9 +186,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
 .header-plain .col {line-height:1.4; font-weight:700}
 .header-plain .col.center {display:flex; justify-content:center}
 .header-date {text-align:center; font-size:13px; margin-bottom:8px}
-#btnPrintStats { display:none !important; }
 
-/* معاينات */
 .logo-preview{display:flex;align-items:center;gap:10px}
 .logo-preview img{max-height:56px;max-width:140px;border:1px dashed var(--border);padding:6px;border-radius:8px;background:#fafafa}
 
@@ -224,9 +222,9 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
     <div class="logo-wrap">
       <img id="schoolLogo" alt="شعار المدرسة" class="hidden">
-      <!-- زر التحكم بالحساب: يتغير تلقائياً بين دخول وخروج -->
       <button class="btn" id="authBtn" onclick="toggleAuth()">🔐 دخول المشرف</button>
-      <button class="btn admin-only hidden" onclick="openSettings()">⚙️ الإعدادات</button>
+      <!-- لوحة الإعدادات متاحة للجميع للتحكم بالطباعة -->
+      <button class="btn" onclick="openSettings()">⚙️ الإعدادات</button>
     </div>
   </header>
 
@@ -294,8 +292,8 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
     </div>
   </div>
 
-  <!-- رسائل واتساب -->
-  <div class="card" id="waSection">
+  <!-- رسائل واتساب الجماعية (مخفية تماماً عن الزائر ومتاحة للمشرف فقط) -->
+  <div class="card admin-only hidden" id="waSection">
     <h3 style="margin-top:0">الرسائل الجماعية واتساب</h3>
     <div class="grid-2">
       <div>
@@ -324,12 +322,21 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
           <button class="btn" style="background:var(--primary);color:#fff;border-color:transparent" id="bulkWhatsAppBtn">✨ إعداد روابط واتساب</button>
           <button class="btn" style="background:var(--ok);color:#fff;border-color:transparent" id="startAutoBtn">📤 إرسال تلقائي</button>
           <button class="btn" style="background:var(--warn);color:#fff;border-color:transparent" id="stopAutoBtn" disabled>⏹ إيقاف الإرسال</button>
-          <button class="btn admin-only hidden" style="background:var(--warn);color:#fff;border-color:transparent" id="bulkDeleteBtn">🗑 حذف المحددين</button>
+          <button class="btn" style="background:var(--warn);color:#fff;border-color:transparent" id="bulkDeleteBtn">🗑 حذف المحددين</button>
         </div>
       </div>
     </div>
     <div style="height:1px;background:var(--border);margin:10px 0"></div>
     <div id="bulkLinks" class="grid-fit hidden"></div>
+  </div>
+
+  <!-- ✅ إحصاءات سريعة (تم نقلها أعلى الجدول) -->
+  <div class="card" style="margin-bottom: 12px;">
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a">إجمالي: <b id="countTotal">0</b></span>
+      <span class="tag admin-only hidden" style="background:#eef2ff;color:#1e3a8a">محدد: <b id="countSelected">0</b></span>
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a">مطابقة: <b id="countFiltered">0</b></span>
+    </div>
   </div>
 
   <!-- جدول الطلاب -->
@@ -338,7 +345,7 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
       <table id="studentsTable">
         <thead>
           <tr>
-            <th class="nowrap">تحديد</th>
+            <th class="nowrap admin-only hidden">تحديد</th>
             <th>الطالب</th>
             <th>الجوال</th>
             <th>رقم الهوية</th>
@@ -349,15 +356,6 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-    </div>
-  </div>
-
-  <!-- إحصاءات سريعة -->
-  <div class="card">
-    <div style="display:flex;flex-wrap:wrap;gap:8px">
-      <span class="tag" style="background:#eef2ff;color:#1e3a8a">إجمالي: <b id="countTotal">0</b></span>
-      <span class="tag" style="background:#eef2ff;color:#1e3a8a">محدد: <b id="countSelected">0</b></span>
-      <span class="tag" style="background:#eef2ff;color:#1e3a8a">مطابقة: <b id="countFiltered">0</b></span>
     </div>
   </div>
 </div>
@@ -381,75 +379,15 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
   </div>
 </div>
 
-<!-- لوحة الإعدادات الجانبية (للمشرف فقط) -->
+<!-- لوحة الإعدادات الجانبية -->
 <div id="settingsPanel" class="settings-panel">
   <div class="settings-header">
     <h3>⚙️ الإعدادات</h3>
     <button class="close-settings" onclick="closeSettings()">✖</button>
   </div>
 
-  <!-- 🔐 تغيير بيانات المشرف -->
-  <div class="accordion" id="acc-auth">
-    <div class="acc-head" onclick="toggleAcc('acc-auth')">🔐 بيانات دخول المشرف</div>
-    <div class="acc-body">
-      <div class="grid-2">
-        <div><label>اسم المستخدم الجديد</label><input id="cfg_user" type="text"></div>
-        <div><label>كلمة المرور الجديدة</label><input id="cfg_pass" type="password"></div>
-      </div>
-      <button class="btn" onclick="saveAdminCredentials()" style="background:var(--ok);color:#fff;margin-top:8px">💾 تحديث بيانات الدخول</button>
-    </div>
-  </div>
-
-  <!-- 🖼 الشعار -->
-  <div class="accordion" id="acc-logo">
-    <div class="acc-head" onclick="toggleAcc('acc-logo')">🖼️ الشعار</div>
-    <div class="acc-body">
-      <div class="logo-preview">
-        <img id="logoPreview" class="hidden" alt="معاينة الشعار">
-        <span id="logoNone" class="small">لا يوجد شعار حاليًا</span>
-      </div>
-      <div class="grid-fit" style="margin-top:8px">
-        <label class="btn">⬆️ اختر شعار
-          <input id="logoInput" type="file" accept="image/*" hidden>
-        </label>
-        <button class="btn" id="logoRemoveBtn">🗑 حذف الشعار</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 📄 إعدادات الترويسة -->
-  <div class="accordion" id="acc-header">
-    <div class="acc-head" onclick="toggleAcc('acc-header')">📄 إعدادات الترويسة</div>
-    <div class="acc-body">
-      <div class="grid-2">
-        <div><label>الدولة</label><input id="hdr_country" type="text" value="المملكة العربية السعودية"></div>
-        <div><label>الوزارة</label><input id="hdr_ministry" type="text" value="وزارة التعليم"></div>
-      </div>
-      <div class="grid-2">
-        <div><label>الإدارة التعليمية</label><input id="hdr_directorate" type="text" value="الإدارة العامة للتعليم بمحافظة جدة"></div>
-        <div><label>اسم المدرسة</label><input id="hdr_school" type="text" value="ثانوية الأمير عبدالمجيد الأولى بنين"></div>
-      </div>
-      <div class="grid-fit" style="margin-top:6px">
-        <button class="btn" id="saveHeaderBtn" style="background:var(--ok);color:#fff">💾 حفظ الترويسة</button>
-        <button class="btn" id="resetHeaderBtn">🔁 افتراضي</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ⏰ دوام المدرسة -->
-  <div class="accordion" id="acc-start">
-    <div class="acc-head" onclick="toggleAcc('acc-start')">⏰ دوام المدرسة</div>
-    <div class="acc-body">
-      <label>وقت بداية الدوام (24h)</label>
-      <div class="grid-fit">
-        <input id="schoolStart" type="time" value="07:15">
-        <button class="btn" id="saveStartBtn">💾 حفظ</button>
-      </div>
-    </div>
-  </div>
-
   <!-- 🖨 إعدادات طباعة كشف المتابعة -->
-  <div class="accordion" id="acc-print">
+  <div class="accordion open" id="acc-print">
     <div class="acc-head" onclick="toggleAcc('acc-print')">🖨 إعدادات طباعة كشف المتابعة</div>
     <div class="acc-body">
       <div class="scrollable-acc-content">
@@ -477,6 +415,54 @@ tbody td {padding:10px; border-bottom:1px solid var(--border)}
       </div>
     </div>
   </div>
+
+  <!-- 🔐 تغيير بيانات المشرف (مخفية إلا للمشرف) -->
+  <div class="accordion admin-only hidden" id="acc-auth">
+    <div class="acc-head" onclick="toggleAcc('acc-auth')">🔐 بيانات دخول المشرف</div>
+    <div class="acc-body">
+      <div class="grid-2">
+        <div><label>اسم المستخدم الجديد</label><input id="cfg_user" type="text"></div>
+        <div><label>كلمة المرور الجديدة</label><input id="cfg_pass" type="password"></div>
+      </div>
+      <button class="btn" onclick="saveAdminCredentials()" style="background:var(--ok);color:#fff;margin-top:8px">💾 تحديث بيانات الدخول</button>
+    </div>
+  </div>
+
+  <!-- 🖼 الشعار (للمشرف) -->
+  <div class="accordion admin-only hidden" id="acc-logo">
+    <div class="acc-head" onclick="toggleAcc('acc-logo')">🖼️ الشعار</div>
+    <div class="acc-body">
+      <div class="logo-preview">
+        <img id="logoPreview" class="hidden" alt="معاينة الشعار">
+        <span id="logoNone" class="small">لا يوجد شعار حاليًا</span>
+      </div>
+      <div class="grid-fit" style="margin-top:8px">
+        <label class="btn">⬆️ اختر شعار
+          <input id="logoInput" type="file" accept="image/*" hidden>
+        </label>
+        <button class="btn" id="logoRemoveBtn">🗑 حذف الشعار</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📄 إعدادات الترويسة (للمشرف) -->
+  <div class="accordion admin-only hidden" id="acc-header">
+    <div class="acc-head" onclick="toggleAcc('acc-header')">📄 إعدادات الترويسة</div>
+    <div class="acc-body">
+      <div class="grid-2">
+        <div><label>الدولة</label><input id="hdr_country" type="text" value="المملكة العربية السعودية"></div>
+        <div><label>الوزارة</label><input id="hdr_ministry" type="text" value="وزارة التعليم"></div>
+      </div>
+      <div class="grid-2">
+        <div><label>الإدارة التعليمية</label><input id="hdr_directorate" type="text" value="الإدارة العامة للتعليم بمحافظة جدة"></div>
+        <div><label>اسم المدرسة</label><input id="hdr_school" type="text" value="ثانوية الأمير عبدالمجيد الأولى بنين"></div>
+      </div>
+      <div class="grid-fit" style="margin-top:6px">
+        <button class="btn" id="saveHeaderBtn" style="background:var(--ok);color:#fff">💾 حفظ الترويسة</button>
+        <button class="btn" id="resetHeaderBtn">🔁 افتراضي</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- خلفية إغلاق لوحة الإعدادات -->
@@ -492,7 +478,7 @@ const AUTH_KEY = 'admin_auth_credentials_v1';
 let isAdmin = false;
 function getAdminCredentials() {
   try {
-    return JSON.parse(localStorage.getItem(AUTH_KEY)) || { user: 'Abokaled', pass: 'Zoom6410' };
+    return JSON.parse(localStorage.getItem(AUTH_KEY)) || { user: 'admin', pass: '1234' };
   } catch { return { user: 'admin', pass: '1234' }; }
 }
 
@@ -510,7 +496,6 @@ function updateAuthUI() {
     authBtn.style.background = '';
     authBtn.style.color = '';
     adminElems.forEach(el => el.classList.add('hidden'));
-    closeSettings();
   }
   render();
 }
@@ -560,10 +545,9 @@ function saveAdminCredentials() {
 
 /* ===== الحالة العامة ===== */
 let students=[], editingUid=null, searchText='', gradeFilter='', classFilter='';
-let selectedUids=new Set(); let autoTimer=null, autoQueue=[], autoIndex=0;
+let selectedUids=new Set();
 let settings={hijriAdjust:0, schoolStart:'07:15'};
-let templates=null; let pePrefs=null; let schoolLogo=null;
-let pro={showRowSummary:true,showLastMsg:true,showWarnings:true,showRowWA:true,collapseAddForm:true,hideWASection:false,thr:{delay_alert:3,delay_warn:5,absent_alert:3,absent_warn:5}};
+let pePrefs=null; let schoolLogo=null;
 let headerData={country:'المملكة العربية السعودية',ministry:'وزارة التعليم',directorate:'الإدارة العامة للتعليم بمحافظة جدة',school:'ثانوية الأمير عبدالمجيد الأولى بنين'};
 
 /* ===== أدوات ===== */
@@ -598,30 +582,12 @@ function todayInfo(dateObj){
   return {day,miladi,hijri,time,fullDate:`${miladi} الموافق ${hijri}`};
 }
 
-/* ===== قوالب ===== */
-function defaultTemplates(){return{
-  delay:`نود إبلاغكم بأن ابنكم {name} تأخر عن الحضور اليوم {day} {fullDate}.`,
-  absent:`نود إبلاغكم بأن ابنكم {name} غاب عن الحضور اليوم {day} {fullDate}.`,
-  custom:`السلام عليكم ولي أمر الطالب {name}، اليوم: {day}، التاريخ: {date} الموافق {hijri}.`
-}}
-function loadTemplates(){try{templates=JSON.parse(localStorage.getItem(TPL_KEY)||'null')||defaultTemplates()}catch{templates=defaultTemplates()}}
-
-/* ===== إعدادات الطباعة/التصدير ===== */
-function defaultPE(){return{columns:{name:true,phone:true,id:true,grade:true,class:true}}}
-function loadPE(){try{pePrefs=JSON.parse(localStorage.getItem(PE_KEY)||'null')||defaultPE()}catch{pePrefs=defaultPE()}}
-function getSelectedColumns(){ const order=['name','phone','id','grade','class']; const labels={name:'اسم الطالب',phone:'الجوال',id:'رقم الهوية',grade:'الصف',class:'الفصل'}; return {order, labels}; }
-
 /* ===== الشعار ===== */
 function loadLogo(){try{schoolLogo=localStorage.getItem(LOGO_KEY)||null}catch{schoolLogo=null}
-  const headerImg=$('#schoolLogo'), prevImg=$('#logoPreview'), none=$('#logoNone');
-  if(schoolLogo){headerImg.src=schoolLogo;headerImg.classList.remove('hidden');if(prevImg){prevImg.src=schoolLogo;prevImg.classList.remove('hidden');none?.classList.add('hidden')}}
-  else{headerImg.classList.add('hidden');if(prevImg){prevImg.classList.add('hidden');none?.classList.remove('hidden')}}
+  const headerImg=$('#schoolLogo');
+  if(schoolLogo){headerImg.src=schoolLogo;headerImg.classList.remove('hidden');}
+  else{headerImg.classList.add('hidden');}
 }
-
-/* ===== سجلات الحضور ===== */
-function loadRecords(){try{return JSON.parse(localStorage.getItem(REC_KEY)||'{}')}catch{return{}}}
-function saveRecords(rec){localStorage.setItem(REC_KEY,JSON.stringify(rec))}
-function summarize(uid){const recs=loadRecords()[uid]||[];let absent=0,delayMin=0,last=null;recs.forEach(r=>{if(r.type==='absent')absent++;if(r.type==='delay')delayMin+=(r.minutes||0);if(!last||(r.ts||0)>(last.ts||0))last=r});const delayCount=recs.filter(r=>r.type==='delay').length;return{absent,delayMin,delayCount,last}}
 
 /* ===== تخزين الطلاب ===== */
 function saveLS(){localStorage.setItem(LS_KEY,JSON.stringify(students));refreshFiltersOptions();render()}
@@ -634,20 +600,28 @@ function filterFn(s){const q=(searchText||'').trim().toLowerCase();const mt=!q||
 function getFiltered(){return students.filter(filterFn)}
 
 /* ===== رسم الجدول ===== */
-function render(){const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';const filtered=getFiltered();filtered.forEach(s=>{const tr=document.createElement('tr');const checked=selectedUids.has(s.uid)?'checked':'';const sum=summarize(s.uid);
-  let nameHtml=`<div class="row-meta"><b>${escapeHtml(s.name||'')}</b>`;
-  if(pro.showRowSummary) nameHtml+=`<div class="meta-line">📊 ${sum.absent} غياب – ${sum.delayMin} دقيقة تأخر</div>`;
-  nameHtml+=`</div>`;
-  const waUrl=waLink(s.phone,`السلام عليكم ولي أمر ${s.name??''}`);
+function render(){
+  const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';
+  const filtered=getFiltered();
   
-  // التحكم بإظهار أزرار التحكم بحسب حالة الدخول
-  const editBtns = isAdmin ? `
-    <button class="btn" style="padding:6px 9px" data-act="edit" data-uid="${s.uid}" title="تعديل">✏</button>
-    <button class="btn" style="padding:6px 9px" data-act="del" data-uid="${s.uid}" title="حذف">🗑</button>
-  ` : '';
+  filtered.forEach(s=>{
+    const tr=document.createElement('tr');
+    const checked=selectedUids.has(s.uid)?'checked':'';
+    let nameHtml=`<div class="row-meta"><b>${escapeHtml(s.name||'')}</b></div>`;
+    const waUrl=waLink(s.phone,`السلام عليكم ولي أمر ${s.name??''}`);
+    
+    // الأزرار المتاحة للمشرف فقط
+    const adminBtns = isAdmin ? `
+      <button class="btn stats-btn" style="padding:6px 9px" data-act="stats" data-uid="${s.uid}" title="إحصائيات">📊</button>
+      <button class="btn" style="padding:6px 9px" data-act="edit" data-uid="${s.uid}" title="تعديل">✏</button>
+      <button class="btn" style="padding:6px 9px" data-act="del" data-uid="${s.uid}" title="حذف">🗑</button>
+    ` : '';
 
-  tr.innerHTML=`
-<td><input type="checkbox" class="rowSel" data-uid="${s.uid}" ${checked}></td>
+    // خانة الاختيار للمشرف فقط
+    const checkCell = isAdmin ? `<td><input type="checkbox" class="rowSel" data-uid="${s.uid}" ${checked}></td>` : '';
+
+    tr.innerHTML=`
+${checkCell}
 <td>${nameHtml}</td>
 <td class="mono">${escapeHtml(s.phone||'')}</td>
 <td class="mono">${escapeHtml(s.id||'')}</td>
@@ -657,12 +631,16 @@ function render(){const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';co
   <div style="display:flex;gap:6px;flex-wrap:wrap">
     <a class="btn" style="padding:6px 9px" href="tel:${encodeURIComponent(s.phone||'')}" title="اتصال">📞</a>
     <a class="icon-btn" title="واتساب" href="${waUrl}" target="_blank">🟢</a>
-    <button class="btn stats-btn" style="padding:6px 9px" data-act="stats" data-uid="${s.uid}" title="إحصائيات">📊</button>
-    ${editBtns}
+    ${adminBtns}
   </div>
 </td>`;
-  tbody.appendChild(tr);
-});$('#countTotal').textContent=students.length;$('#countFiltered').textContent=filtered.length;$('#countSelected').textContent=selectedUids.size}
+    tbody.appendChild(tr);
+  });
+  
+  $('#countTotal').textContent=students.length;
+  $('#countFiltered').textContent=filtered.length;
+  $('#countSelected').textContent=selectedUids.size;
+}
 
 /* ===== CRUD ===== */
 function fillForm(s){$('#f_name').value=s?.name||'';$('#f_phone').value=s?.phone||'';$('#f_id').value=s?.id||'';$('#f_grade').value=s?.grade||'';$('#f_class').value=s?.class||''}
@@ -679,13 +657,12 @@ document.getElementById('classFilter').addEventListener('change',e=>{classFilter
 document.getElementById('resetFiltersBtn').addEventListener('click',()=>{searchText='';gradeFilter='';classFilter='';document.getElementById('searchBox').value='';refreshFiltersOptions();render()});
 document.getElementById('clearBtn').addEventListener('click',()=>{if(!isAdmin)return;if(confirm('سيتم حذف كل البيانات المخزنة محليًا. هل أنت متأكد؟')){students=[];localStorage.removeItem(REC_KEY);saveLS();clearForm()}});
 document.getElementById('toggleAddFormBtn').addEventListener('click',()=>{document.getElementById('addFormCard').classList.toggle('hidden')});
-document.getElementById('selectAllFiltered').addEventListener('change',e=>{const state=e.target.checked;const visible=new Set(getFiltered().map(s=>s.uid));if(state)visible.forEach(u=>selectedUids.add(u));else visible.forEach(u=>selectedUids.delete(u));document.querySelectorAll('.rowSel').forEach(cb=>{if(visible.has(cb.dataset.uid))cb.checked=state});$('#countSelected').textContent=selectedUids.size});
 
 document.addEventListener('change',e=>{if(e.target.classList.contains('rowSel')){const u=e.target.dataset.uid;e.target.checked?selectedUids.add(u):selectedUids.delete(u);$('#countSelected').textContent=selectedUids.size}});
 document.addEventListener('click',e=>{
   const b=e.target.closest('button[data-act]'); if(!b) return;
   const act=b.dataset.act, u=b.dataset.uid;
-  if(act==='stats'){ showStats(u); }
+  if(act==='stats' && isAdmin){ showStats(u); }
   else if(act==='edit' && isAdmin){const s=students.find(x=>x.uid===u); if(s){editingUid=u;fillForm(s);$('#formTitle').textContent='✏ تعديل بيانات الطالب';$('#cancelEditBtn').classList.remove('hidden');$('#saveBtn').textContent='تحديث'; if($('#addFormCard').classList.contains('hidden')) $('#addFormCard').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'})}}
   else if(act==='del' && isAdmin){ if(confirm('حذف هذا الطالب؟')) deleteByUid(u); }
 });
@@ -719,7 +696,8 @@ function buildOfficialHeaderHTML(){
 function printTableOnly(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لطباعتها');return}
   const t=todayInfo(), grade=gradeFilter||'كل الصفوف', cls=classFilter||'كل الفصول';
-  const {order,labels}=getSelectedColumns();
+  const order=['name','phone','id','grade','class'];
+  const labels={name:'اسم الطالب',phone:'الجوال',id:'رقم الهوية',grade:'الصف',class:'الفصل'};
   const thead = `<tr><th>الرقم</th>${order.map(k=>`<th>${labels[k]}</th>`).join('')}</tr>`;
   const rows  = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
   const header = buildOfficialHeaderHTML();
@@ -737,7 +715,8 @@ document.getElementById('printBtn').addEventListener('click',printTableOnly);
 
 function exportFilteredExcel(){
   const data=getFiltered(); if(!data.length){alert('لا توجد بيانات لتصديرها.');return}
-  const {order,labels}=getSelectedColumns();
+  const order=['name','phone','id','grade','class'];
+  const labels={name:'اسم الطالب',phone:'الجوال',id:'رقم الهوية',grade:'الصف',class:'الفصل'};
   const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = s[k] || ''; }); return obj; });
   const ws = XLSX.utils.json_to_sheet(rows);
   const t=todayInfo();
@@ -752,14 +731,14 @@ function printFilteredGradeReport() {
     if (!data.length) data = students;
     if (!data.length) { alert("لا توجد بيانات طلاب للطباعة"); return; }
 
-    const col_behavior = localStorage.getItem("col_behavior") || "السلوك";
-    const col_book = localStorage.getItem("col_book") || "الكتاب";
-    const col_homework = localStorage.getItem("col_homework") || "الواجبات";
-    const col_participation = localStorage.getItem("col_participation") || "المشاركة";
-    const col_period = localStorage.getItem("col_period") || "فترة";
-    const fontSize = parseInt(localStorage.getItem("print_font_size")) || 10;
-    const rowHeight = parseInt(localStorage.getItem("row_height")) || 13;
-    const boxCount = parseInt(localStorage.getItem("box_count")) || 10;
+    const col_behavior = $('#col_behavior')?.value || "السلوك";
+    const col_book = $('#col_book')?.value || "الكتاب";
+    const col_homework = $('#col_homework')?.value || "الواجبات";
+    const col_participation = $('#col_participation')?.value || "المشاركة";
+    const col_period = $('#col_period')?.value || "فترة";
+    const fontSize = parseInt($('#print_font_size')?.value) || 10;
+    const rowHeight = parseInt($('#row_height')?.value) || 13;
+    const boxCount = parseInt($('#box_count')?.value) || 10;
 
     function buildBoxes(count) {
         let row1 = "", row2 = "";
@@ -832,10 +811,9 @@ function printFilteredGradeReport() {
 
 /* ===== نافذة وقوائم الإعدادات ===== */
 function openSettings(){
-  if(!isAdmin) return;
   const creds = getAdminCredentials();
-  $('#cfg_user').value = creds.user;
-  $('#cfg_pass').value = creds.pass;
+  if($('#cfg_user')) $('#cfg_user').value = creds.user;
+  if($('#cfg_pass')) $('#cfg_pass').value = creds.pass;
   $('#settingsPanel').classList.add('open');
   $('#settingsOverlay').style.display='block';
 }
@@ -847,13 +825,6 @@ function savePrintSettings() {
     localStorage.setItem("row_height", document.getElementById("row_height").value);
     localStorage.setItem("box_count", document.getElementById("box_count").value);
     alert("✅ تم حفظ إعدادات الطباعة بنجاح");
-}
-
-/* ===== نافذة الإحصائيات البسيطة ===== */
-function showStats(uid){
-  const s = students.find(x=>x.uid===uid); const name=s?.name||'بدون اسم';
-  const sum=summarize(uid);
-  alert(`📊 إحصائيات الطالب: ${name}\n\n- غياب: ${sum.absent}\n- دقائق التأخير: ${sum.delayMin} دقيقة`);
 }
 
 /* ===== التهيئة الأولية ===== */
