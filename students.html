@@ -671,86 +671,88 @@ function loadLogo(){try{schoolLogo=localStorage.getItem(LOGO_KEY)||null}catch{sc
 function saveLS(){localStorage.setItem(LS_KEY,JSON.stringify(students));refreshFiltersOptions();render()}
 function loadLS(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'[]');students=Array.isArray(v)?v:[]}catch{students=[]}}
 
-/* ===== دالة مركزية موحدة لمعالجة وتحويل ملف الإكسل (للزوار ولزر الاستيراد) ===== */
-function processExcelWorkbook(workbook) {
-  const firstSheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[firstSheetName];
-  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-  
-  if (jsonData.length < 2) return 0;
+/* ===== دالة تحليل ملف الإكسل بالطريقة الدقيقة (نفس طريقة الكود الثاني) ===== */
+function parseExcelData(arrayBuffer) {
+  const data = new Uint8Array(arrayBuffer);
+  const wb = XLSX.read(data, { type: 'array' });
 
-  const headers = jsonData[0].map(h => String(h || '').trim());
-  const nameIdx = headers.findIndex(h => h.includes('اسم') || h.includes('الطالب'));
-  const phoneIdx = headers.findIndex(h => h.includes('جوال') || h.includes('هاتف') || h.includes('الجوال'));
-  const idIdx = headers.findIndex(h => h.includes('هوية') || h.includes('سجل') || h.includes('الرقم المدني'));
-  const gradeIdx = headers.findIndex(h => h.includes('صف') || h.includes('الصف'));
-  const classIdx = headers.findIndex(h => h.includes('فصل') || h.includes('الفصل'));
+  let ws = wb.Sheets[wb.SheetNames[1]] || wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
-  let loadedStudents = [];
-  for (let i = 1; i < jsonData.length; i++) {
-    const row = jsonData[i];
-    if (!row || row.length === 0) continue;
+  const headerRowIndex = 3;
+  if (!rows[headerRowIndex]) return [];
 
-    const name = nameIdx > -1 ? row[nameIdx] : row[1];
-    if (!name) continue;
+  const headerRow = rows[headerRowIndex].map(h => String(h || '').trim());
 
-    loadedStudents.push({
+  const col = {
+    phone: headerRow.findIndex(h => /الجوال/i.test(h)),
+    class: headerRow.findIndex(h => /الفصل/i.test(h)),
+    grade: headerRow.findIndex(h => /الصف/i.test(h)),
+    name:  headerRow.findIndex(h => /اسم الطالب/i.test(h)),
+    id:    headerRow.findIndex(h => /رقم الطالب|الهوية/i.test(h))
+  };
+
+  function convertGrade(code) {
+    code = String(code).trim();
+    if (code === "1314") return "الأول الثانوي";
+    if (code === "1416") return "الثاني الثانوي";
+    if (code === "1516") return "الثالث الثانوي";
+    return code;
+  }
+
+  let imported = [];
+  for (let i = headerRowIndex + 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || !r.length) continue;
+
+    const s = {
       uid: uid(),
-      name: String(name || '').trim(),
-      phone: String(phoneIdx > -1 ? row[phoneIdx] : (row[2] || '')).trim(),
-      id: String(idIdx > -1 ? row[idIdx] : (row[3] || '')).trim(),
-      grade: String(gradeIdx > -1 ? row[gradeIdx] : (row[4] || '')).trim(),
-      class: String(classIdx > -1 ? row[classIdx] : (row[5] || '')).trim()
-    });
-  }
+      name:  col.name  >= 0 ? (r[col.name]  || '').toString().trim() : '',
+      phone: col.phone >= 0 ? (r[col.phone] || '').toString().trim() : '',
+      id:    col.id    >= 0 ? (r[col.id]    || '').toString().trim() : '',
+      grade: col.grade >= 0 ? convertGrade(r[col.grade]) : '',
+      class: col.class >= 0 ? (r[col.class] || '').toString().trim() : ''
+    };
 
-  if (loadedStudents.length > 0) {
-    students = loadedStudents;
-    saveLS();
+    if (s.name) imported.push(s);
   }
-  return loadedStudents.length;
+  return imported;
 }
 
-/* ===== الجلب التلقائي لملف StudentGuidance.xls من نفس المجلد لجميع الزائرين ===== */
-function autoLoadDefaultFile() {
-  fetch('StudentGuidance.xls')
-    .then(response => {
-      if (!response.ok) throw new Error('الملف غير موجود');
-      return response.arrayBuffer();
-    })
-    .then(buffer => {
-      const data = new Uint8Array(buffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      processExcelWorkbook(workbook);
-    })
-    .catch(() => {
-      loadLS();
-    });
+/* ===== الجلب التلقائي لملف StudentGuidance.xls عند فتح الصفحة لجميع الزائرين ===== */
+async function loadDefaultExcelFile() {
+  try {
+    const response = await fetch('StudentGuidance.xls');
+    if (!response.ok) return;
+    const arrayBuffer = await response.arrayBuffer();
+    const imported = parseExcelData(arrayBuffer);
+    if (imported.length > 0) {
+      students = imported;
+      saveLS();
+    }
+  } catch (err) {
+    loadLS();
+  }
 }
 
-/* ===== استيراد ملف Excel يدوياً عبر الزر ===== */
-document.getElementById('excelInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
+/* ===== استيراد ملف Excel يدوياً عبر زر الاستيراد ===== */
+document.getElementById('excelInput').addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = function(event) {
-    try {
-      const data = new Uint8Array(event.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const count = processExcelWorkbook(workbook);
-      
-      if (count > 0) {
-        alert(`✅ تم استيراد ${count} طالباً بنجاح من ملف الـ Excel!`);
-      } else {
-        alert('⚠️ لم يتم العثور على بيانات مطابقة في الملف.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('❌ حدث خطأ أثناء قراءة ملف الـ Excel.');
-    } finally {
-      e.target.value = '';
+  reader.onload = (ev) => {
+    const imported = parseExcelData(ev.target.result);
+
+    if (!imported.length) {
+      alert('⚠️ لا توجد بيانات طلاب مطابقة في الملف');
+      return;
     }
+
+    students = imported.concat(students);
+    saveLS();
+    alert('✅ تم استيراد ' + imported.length + ' طالب بنجاح ✅');
   };
   reader.readAsArrayBuffer(file);
 });
@@ -931,7 +933,6 @@ function printTableOnly(){
 
   <script>
     window.onload = function() {
-      // إدراج رقم الصفحة التلقائي للتوافق مع كل المتصفحات
       var pages = Math.ceil(document.body.scrollHeight / 1120);
       window.print();
       setTimeout(function(){ window.close(); }, 500);
@@ -1111,14 +1112,17 @@ function savePrintSettings() {
     alert("✅ تم حفظ إعدادات طباعة كشف المتابعة بنجاح");
 }
 
-function init(){
+async function init(){
   checkAndFixOldCredentials();
   loadHeaderData();
   loadLogo();
   loadPE();
   
-  // ⚡ استدعاء دالة الجلب التلقائي لملف StudentGuidance.xls ليراها جميع الزائرين
-  autoLoadDefaultFile();
+  // ⚡ جلب ملف StudentGuidance.xls تلقائياً عند فتح الصفحة بالطريقة الدقيقة
+  await loadDefaultExcelFile();
+
+  refreshFiltersOptions();
+  updateAuthUI();
 }
 init();
 </script>
