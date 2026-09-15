@@ -671,6 +671,39 @@ function loadLogo(){try{schoolLogo=localStorage.getItem(LOGO_KEY)||null}catch{sc
 function saveLS(){localStorage.setItem(LS_KEY,JSON.stringify(students));refreshFiltersOptions();render()}
 function loadLS(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'[]');students=Array.isArray(v)?v:[]}catch{students=[]}}
 
+/* ✅ دالة جلب ملف إكسل تلقائياً من المجلد المحلي باسم StudentGuidance.xls */
+async function loadDefaultExcelFile() {
+  const fileName = 'StudentGuidance.xls';
+  try {
+    const response = await fetch(fileName);
+    if (!response.ok) return; 
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
+    const workbook = XLSX.read(data, { type: 'array' });
+    
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    
+    if (jsonData && jsonData.length > 0) {
+      // مطابقة الأعمدة القادمة من الإكسل مع بنية بيانات النظام
+      students = jsonData.map(item => ({
+        uid: uid(),
+        name: item['اسم الطالب'] || item['Name'] || item['اسم'] || Object.values(item)[0] || '',
+        phone: item['الجوال'] || item['الهاتف'] || item['Phone'] || '',
+        id: item['رقم الهوية'] || item['الهوية'] || item['ID'] || '',
+        grade: item['الصف'] || item['Grade'] || '',
+        class: item['الفصل'] || item['Class'] || ''
+      })).filter(s => s.name);
+      
+      saveLS();
+    }
+  } catch (error) {
+    console.log("لم يتم جلب الملف الافتراضي، تم الاعتماد على التخزين المحلي.");
+  }
+}
+
 function refreshFiltersOptions(){const gradeSel=$('#gradeFilter');if(!gradeSel)return;const grades=[...new Set(students.map(s=>(s.grade||'').trim()).filter(Boolean))].sort(localeSort);const prev=gradeFilter;gradeSel.innerHTML=`<option value="">كل الصفوف</option>`+grades.map(g=>`<option ${g===prev?'selected':''} value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');applyClassOptions();gradeFilter=$('#gradeFilter').value||'';classFilter=$('#classFilter').value||''}
 function applyClassOptions(){const classSel=$('#classFilter');if(!classSel)return;const g=$('#gradeFilter')?.value||'';let classes=[];if(g){classes=[...new Set(students.filter(s=>(s.grade||'').trim()===g).map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}else{classes=[...new Set(students.map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}const keep=classFilter;classSel.disabled=false;classSel.innerHTML=`<option value="">كل الفصول</option>`+classes.map(c=>`<option ${c===keep?'selected':''} value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('')}
 function filterFn(s){const q=(searchText||'').trim().toLowerCase();const mt=!q||((s.name||'').toLowerCase().includes(q)||String(s.id||'').toLowerCase().includes(q));const mg=!gradeFilter||(String(s.grade||'').trim()===gradeFilter);const mc=!classFilter||(String(s.class||'').trim()===classFilter);return mt&&mg&&mc}
@@ -749,6 +782,39 @@ document.getElementById('resetFiltersBtn').addEventListener('click',()=>{searchT
 document.getElementById('clearBtn').addEventListener('click',()=>{if(!isAdmin)return;if(confirm('سيتم حذف كل البيانات المخزنة محليًا. هل أنت متأكد؟')){students=[];localStorage.removeItem(REC_KEY);saveLS();clearForm()}});
 document.getElementById('toggleAddFormBtn').addEventListener('click',()=>{document.getElementById('addFormCard').classList.toggle('hidden')});
 
+// ✅ معالجة استيراد ملف الإكسل اليدوي عبر الزر
+document.getElementById('excelInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    try {
+      const data = new Uint8Array(event.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      
+      if (jsonData && jsonData.length > 0) {
+        students = jsonData.map(item => ({
+          uid: uid(),
+          name: item['اسم الطالب'] || item['Name'] || item['اسم'] || Object.values(item)[0] || '',
+          phone: item['الجوال'] || item['الهاتف'] || item['Phone'] || '',
+          id: item['رقم الهوية'] || item['الهوية'] || item['ID'] || '',
+          grade: item['الصف'] || item['Grade'] || '',
+          class: item['الفصل'] || item['Class'] || ''
+        })).filter(s => s.name);
+        
+        saveLS();
+        alert('✅ تم استيراد بيانات الطلاب بنجاح من ملف الإكسل!');
+      }
+    } catch(err) {
+      alert('❌ حدث خطأ أثناء قراءة ملف الإكسل.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
 document.addEventListener('change',e=>{if(e.target.classList.contains('rowSel')){const u=e.target.dataset.uid;e.target.checked?selectedUids.add(u):selectedUids.delete(u);$('#countSelected').textContent=selectedUids.size}});
 document.addEventListener('click',e=>{
   const b=e.target.closest('button[data-act]'); if(!b) return;
@@ -825,16 +891,13 @@ function printTableOnly(){
       background: #fff;
       padding: 4px 0;
     }
-    @media print {
-      .page-footer-print { position: fixed; bottom: 0; }
-    }
   </style>
   </head><body>
   
   <table>
     <thead>
       <tr>
-        <td colspan="${order.length + 1}" style="border:none; padding:0; text-align:stretch;">
+        <td colspan="${order.length + 1}" style="border:none; padding:0;">
           ${headerHTML}
           <h2>📋 كشف الطلاب</h2>
           <div class="sub-title">الصف: <b>${grade}</b> — الفصل: <b>${cls}</b> | التاريخ: ${t.fullDate}</div>
@@ -847,8 +910,6 @@ function printTableOnly(){
 
   <script>
     window.onload = function() {
-      // إدراج رقم الصفحة التلقائي للتوافق مع كل المتصفحات
-      var pages = Math.ceil(document.body.scrollHeight / 1120);
       window.print();
       setTimeout(function(){ window.close(); }, 500);
     };
@@ -874,7 +935,7 @@ function exportFilteredExcel(){
 }
 document.getElementById('exportExcelBtn').addEventListener('click',exportFilteredExcel);
 
-/* ===== دالة طباعة كشف المتابعة مع تكرار الترويسة وترقيم الصفحات تلقائياً ===== */
+/* ✅ دالة طباعة كشف المتابعة مع تكرار الترويسة وترقيم الصفحات تلقائياً */
 function printFilteredGradeReport() {
     let data = getFiltered();
     if (!data.length) data = students;
@@ -1027,15 +1088,23 @@ function savePrintSettings() {
     alert("✅ تم حفظ إعدادات طباعة كشف المتابعة بنجاح");
 }
 
-function init(){
+/* ✅ دالة التشغيل الرئيسية المحدثة لجلب الملف تلقائياً */
+async function init(){
   checkAndFixOldCredentials();
   loadLS();
+  
+  // جلب الملف الافتراضي من المجلد إذا لم توجد بيانات مخزنة
+  if (students.length === 0) {
+    await loadDefaultExcelFile();
+  }
+  
   loadHeaderData();
   loadLogo();
   loadPE();
   refreshFiltersOptions();
   updateAuthUI();
 }
+
 init();
 </script>
 </body>
