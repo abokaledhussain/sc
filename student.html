@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>📘 كشوفات الطلاب - ثانوية الأمير عبدالمجيد الأولى (Pro)</title>
+
+<!-- ✅ خطوط -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- ✅ مكتبة Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root {
+  --primary:#1f5fa6;
+  --primary-700:#174b83;
+  --accent:#0ea5e9;
+  --bg:#f2f4f8;
+  --card:#fff;
+  --muted:#6b7280;
+  --ok:#16a34a;
+  --warn:#ef4444;
+  --border:#e5e7eb;
+  --delay:#f59e0b;
+}
+
+* {box-sizing:border-box}
+html, body {overflow-x:hidden}
+body {
+  margin:0;
+  background:var(--bg);
+  font-family:Cairo, sans-serif;
+  color:#111;
+}
+
+.container {max-width:1100px; margin:24px auto; padding:0 16px}
+
+/* ✅ رأس الصفحة */
+header {
+  position:relative;
+  background:linear-gradient(135deg, var(--primary), var(--primary-700));
+  color:#fff;
+  border-radius:16px;
+  padding:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+header h1 {margin:0; font-size:22px; line-height:1.4}
+header p {margin:6px 0 0; color:#e2e8f0; font-size:13px; line-height:1.6}
+#schoolLogo {max-height:64px; max-width:120px; object-fit:contain}
+.logo-wrap {display:flex; align-items:center; gap:8px}
+
+/* ✅ البطاقات */
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+  margin-top:12px;
+}
+
+.toolbar, .filters {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+
+.btn {
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+  padding:8px 12px;
+  cursor:pointer;
+}
+
+.btn:disabled {opacity:.6; cursor:not-allowed}
+
+input, select, textarea {
+  width:100%;
+  padding:9px;
+  border:1px solid var(--border);
+  border-radius:10px;
+}
+
+textarea {min-height:110px}
+.small {color:var(--muted); font-size:12px}
+.grid-2 {display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.grid-fit {display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px}
+
+/* ✅ جدول الطلاب */
+.table-card {overflow:auto; border-radius:14px}
+table {width:100%; border-collapse:separate; border-spacing:0}
+thead th {
+  background:#eff6ff;
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:right;
+  position:sticky;
+  top:0;
+}
+tbody td {padding:10px; border-bottom:1px solid var(--border)}
+
+.hidden {display:none !important}
+.nowrap {white-space:nowrap}
+.tag {border-radius:999px; padding:2px 8px; font-size:12px}
+
+/* ✅ لوحة الإعدادات متجاوبة مع الجوالات */
+.settings-panel {
+  position:fixed;
+  top:0;
+  right:-100%;
+  width: min(420px, 90vw);
+  height:100vh;
+  background:#fff;
+  box-shadow:-3px 0 14px rgba(0,0,0,.12);
+  border-left:1px solid var(--border);
+  transition:.3s ease-in-out;
+  z-index:1000;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  overflow-y:auto;
+}
+.settings-panel.open {right:0}
+
+.settings-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:4px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.close-settings {
+  cursor:pointer;
+  background:none;
+  border:none;
+  font-size:22px;
+  color:#666;
+}
+
+/* ✅ Accordion مغلق افتراضياً */
+.accordion {border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff; margin-bottom:6px}
+.acc-head {
+  padding:12px 14px;
+  background:#f8fafc;
+  cursor:pointer;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  user-select:none;
+}
+.acc-head::after {
+  content:'▼';
+  font-size:12px;
+  color:var(--muted);
+  transition:.2s;
+}
+.accordion.open .acc-head::after {
+  transform:rotate(180deg);
+}
+.acc-body {padding:12px 14px; display:none; background:#fff}
+.accordion.open .acc-body {display:block}
+.scrollable-acc-content {
+  overflow-y:auto;
+  max-height:55vh;
+  padding-inline-end:6px;
+}
+
+.header-plain {
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.header-plain .col {line-height:1.4; font-weight:700}
+.header-plain .col.center {display:flex; justify-content:center}
+.header-date {text-align:center; font-size:13px; margin-bottom:8px}
+
+.logo-preview{display:flex;align-items:center;gap:10px}
+.logo-preview img{max-height:56px;max-width:140px;border:1px dashed var(--border);padding:6px;border-radius:8px;background:#fafafa}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;justify-content:center;align-items:center}
+.modal-content{background:#fff;width:min(980px,94vw);max-height:86vh;overflow:auto;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.close{float:left;cursor:pointer;font-size:26px;color:#555}
+
+@page { size:A4; margin:8mm; }
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  margin: 0 2px;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: inherit;
+}
+.icon-btn.btn { background: transparent; border: none; }
+.icon-btn:hover { background: rgba(0,0,0,0.04); border-radius: 6px; }
+
+@media (max-width: 600px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  header { flex-direction: column; align-items: flex-start; }
+  .logo-wrap { width: 100%; justify-content: space-between; margin-top: 8px; }
+}
+
+/* ✅ إشعارات (toast) بدل alert() */
+#toastHost{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:8px;align-items:center;width:min(420px,92vw)}
+.toast{background:#1f2937;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.2);opacity:0;transform:translateY(8px);transition:.25s ease;text-align:center;width:100%}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{background:#166534}
+.toast.warn{background:#991b1b}
+
+/* ✅ إتاحة الوصول: تركيز واضح بالكيبورد */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline:3px solid var(--accent); outline-offset:2px;
+}
+
+/* ✅ رابط واتساب فردي داخل قائمة الروابط الجماعية */
+.wa-link-item{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px}
+.wa-link-item a{white-space:nowrap;color:#166534;font-weight:700;text-decoration:none}
+.wa-link-item.sent{opacity:.55}
+
+/* ✅ بطاقة إحصائيات/متابعة الطالب */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.stat-box{border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.stat-box b{display:block;font-size:20px;color:var(--primary)}
+
+.empty-state{padding:28px 14px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>📘 كشوفات الطلاب - ثانوية الأمير عبدالمجيد الأولى</h1>
+      <p>نظام متكامل: كشوفات – رسائل واتساب – إحصاءات. تطوير ودعم / حسين العرياني</p>
+    </div>
+    <div class="logo-wrap">
+      <img id="schoolLogo" alt="شعار المدرسة" class="hidden">
+      <button class="btn" id="authBtn" onclick="toggleAuth()">🔐 دخول المشرف</button>
+      <button class="btn" onclick="openSettings()">⚙️ الإعدادات</button>
+    </div>
+  </header>
+
+  <!-- شريط الأدوات -->
+  <div class="card">
+    <div class="toolbar">
+      <label class="btn admin-only hidden" style="background:var(--primary);color:#fff;border-color:transparent">
+        📥 استيراد Excel
+        <input id="excelInput" type="file" accept=".xlsx,.xls" hidden>
+      </label>
+
+      <label class="btn admin-only hidden">
+        ⭳ استعادة نسخة (JSON)
+        <input id="restoreInput" type="file" accept=".json" hidden>
+      </label>
+
+      <button class="btn admin-only hidden" id="exportBtn">💾 تنزيل نسخة احتياطية</button>
+      <button class="btn admin-only hidden" id="clearBtn" style="color:var(--warn)">🧹 تفريغ التخزين</button>
+
+      <div style="flex:1;min-width:200px">
+        <input id="searchBox" type="text" placeholder="🔎 بحث بالاسم أو رقم الهوية...">
+      </div>
+
+      <button class="btn" id="printBtn" title="طباعة النتائج المصفّاة">🖨 طباعة الكشف</button>
+      <button class="btn" id="exportExcelBtn" title="تصدير النتائج المصفّاة إلى Excel">📤 تصدير Excel</button>
+      <button class="btn" id="exportAllPdfBtn" title="استخراج PDF لكل الطلاب">📄 PDF الكل</button>
+    </div>
+
+    <!-- فلاتر -->
+    <div class="filters" style="margin-top:10px">
+      <div>
+        <label class="small">الصف</label>
+        <select id="gradeFilter"><option value="">كل الصفوف</option></select>
+      </div>
+      <div>
+        <label class="small">الفصل</label>
+        <select id="classFilter" disabled><option value="">كل الفصول</option></select>
+      </div>
+      <button class="btn" id="resetFiltersBtn">♻️ مسح الفلاتر</button>
+
+      <button class="btn admin-only hidden" id="toggleAddFormBtn" title="إظهار/إخفاء نموذج الإضافة">➕ إضافة طالب</button>
+      <button class="btn" style="background:#f59e0b;color:#fff" onclick="printFilteredGradeReport()">🖨 طباعة كشف المتابعة</button>
+    </div>
+  </div>
+
+  <!-- نموذج الإضافة/التعديل (للمشرف فقط) -->
+  <div class="card hidden admin-only" id="addFormCard">
+    <h3 id="formTitle" style="margin-top:0">➕ إضافة طالب جديد</h3>
+    <div class="grid-2">
+      <div><label>اسم الطالب</label><input id="f_name" type="text" placeholder="مثال: محمد علي"></div>
+      <div>
+        <label>الجوال</label>
+        <input id="f_phone" type="tel" placeholder="05xxxxxxxx">
+        <div class="small">يُحوّل تلقائيًا لصيغة واتساب السعودية (+966)</div>
+      </div>
+      <div><label>رقم الهوية</label><input id="f_id" type="text" placeholder="10 أرقام"></div>
+      <div class="grid-fit">
+        <div><label>الصف</label><input id="f_grade" type="text" placeholder="أول / ثاني / ثالث..."></div>
+        <div><label>الفصل</label><input id="f_class" type="text" placeholder="أ / ب / 1 / 2"></div>
+      </div>
+    </div>
+    <div class="toolbar" style="gap:10px;margin-top:12px">
+      <button class="btn" style="background:var(--ok);color:#fff;border-color:transparent" id="saveBtn">حفظ</button>
+      <button class="btn hidden" id="cancelEditBtn">إلغاء التعديل</button>
+    </div>
+  </div>
+
+  <!-- رسائل واتساب الجماعية (للمشرف فقط) -->
+  <div class="card admin-only hidden" id="waSection">
+    <h3 style="margin-top:0">الرسائل الجماعية واتساب</h3>
+    <div class="grid-2">
+      <div>
+        <label>📩 نوع الرسالة</label>
+        <select id="templateSelect">
+          <option value="delay">1) تأخر ابنكم اليوم</option>
+          <option value="absent">2) غياب ابنكم اليوم</option>
+          <option value="custom">3) رسالة مخصصة</option>
+        </select>
+      </div>
+
+      <div style="display:flex;align-items:flex-end">
+        <label class="btn" id="selectAllFilteredLabel" style="display:inline-flex;align-items:center;gap:8px">✅ تحديد كل الظاهر
+          <input type="checkbox" id="selectAllFiltered" hidden>
+        </label>
+      </div>
+
+      <div>
+        <label>نص الرسالة</label>
+        <textarea id="bulkMsg" placeholder="سيتم توليد النص تلقائيًا من القالب ويمكنك تعديله"></textarea>
+      </div>
+
+      <div>
+        <label>خيارات الإرسال</label>
+        <div class="grid-fit">
+          <button class="btn" style="background:var(--primary);color:#fff;border-color:transparent" id="bulkWhatsAppBtn">✨ إعداد روابط واتساب</button>
+          <button class="btn" style="background:var(--ok);color:#fff;border-color:transparent" id="startAutoBtn">📤 إرسال تلقائي</button>
+          <button class="btn" style="background:var(--warn);color:#fff;border-color:transparent" id="stopAutoBtn" disabled>⏹ إيقاف الإرسال</button>
+          <button class="btn" style="background:var(--warn);color:#fff;border-color:transparent" id="bulkDeleteBtn">🗑 حذف المحددين</button>
+        </div>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:10px 0"></div>
+    <div id="bulkLinks" class="grid-fit hidden"></div>
+  </div>
+
+  <!-- الإحصاءات في الأعلى -->
+  <div class="card" style="margin-bottom: 12px;">
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a">إجمالي الطلاب بالمدرسة: <b id="countTotal">0</b></span>
+      <span class="tag admin-only hidden" style="background:#eef2ff;color:#1e3a8a">محدد: <b id="countSelected">0</b></span>
+      <span class="tag" style="background:#eef2ff;color:#1e3a8a" id="filterTagLabel">مطابقة: <b id="countFiltered">0</b></span>
+    </div>
+  </div>
+
+  <!-- جدول الطلاب -->
+  <div class="card" style="padding:0">
+    <div class="table-card">
+      <table id="studentsTable">
+        <thead>
+          <tr>
+            <th class="nowrap admin-only hidden">تحديد</th>
+            <th>الطالب</th>
+            <th>الجوال</th>
+            <th>رقم الهوية</th>
+            <th>الصف</th>
+            <th>الفصل</th>
+            <th class="nowrap">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 🔐 نافذة تسجيل الدخول للمشرف -->
+<div id="loginModal" class="modal">
+  <div class="modal-content" style="max-width:400px">
+    <span class="close" onclick="closeLoginModal()">&times;</span>
+    <h3>🔐 تسجيل دخول المشرف</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+      <div>
+        <label>اسم المستخدم</label>
+        <input type="text" id="loginUser" placeholder="اسم المستخدم">
+      </div>
+      <div>
+        <label>كلمة المرور</label>
+        <input type="password" id="loginPass" placeholder="••••">
+      </div>
+      <button class="btn" style="background:var(--primary);color:#fff;margin-top:6px" onclick="submitLogin()">دخول</button>
+    </div>
+  </div>
+</div>
+
+<!-- 📊 نافذة متابعة/إحصائيات الطالب -->
+<div id="statsModal" class="modal">
+  <div class="modal-content" style="max-width:520px">
+    <span class="close" onclick="closeStatsModal()">&times;</span>
+    <h3 id="statsModalTitle">📊 متابعة الطالب</h3>
+    <div class="stat-grid">
+      <div class="stat-box"><b id="statAbsentCount">0</b><span class="small">أيام غياب</span></div>
+      <div class="stat-box"><b id="statLateCount">0</b><span class="small">مرات تأخر</span></div>
+      <div class="stat-box"><b id="statContactCount">0</b><span class="small">تواصل مع الوالد</span></div>
+    </div>
+    <div class="grid-fit" style="margin-top:12px" id="statsButtons">
+      <button class="btn" data-stat="absentCount">➕ تسجيل غياب</button>
+      <button class="btn" data-stat="lateCount">➕ تسجيل تأخر</button>
+      <button class="btn" data-stat="contactCount">➕ تسجيل تواصل</button>
+    </div>
+    <label style="display:block;margin-top:12px">ملاحظات المتابعة</label>
+    <textarea id="statNotes" placeholder="اكتب ملاحظة عن سلوك الطالب أو متابعته..."></textarea>
+    <div class="toolbar" style="margin-top:10px">
+      <button class="btn" style="background:var(--ok);color:#fff" onclick="saveStudentStats()">💾 حفظ الملاحظات</button>
+      <button class="btn" style="color:var(--warn)" onclick="resetStudentStats()">🧹 تصفير العدادات</button>
+    </div>
+  </div>
+</div>
+
+<!-- لوحة الإعدادات الجانبية المتجاوبة -->
+<div id="settingsPanel" class="settings-panel">
+  <div class="settings-header">
+    <h3 style="margin:0;font-size:18px">⚙️ الإعدادات والطباعة</h3>
+    <button class="close-settings" onclick="closeSettings()">✖</button>
+  </div>
+
+  <!-- 🖨 إعدادات طباعة كشوفات الطلاب العادية -->
+  <div class="accordion" id="acc-std-print">
+    <div class="acc-head" onclick="toggleAcc('acc-std-print')">📋 أعمدة كشف الطلاب العادي</div>
+    <div class="acc-body">
+      <div class="scrollable-acc-content">
+        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_name" checked> اسم الطالب</label>
+        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_phone" checked> الجوال</label>
+        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_id" checked> رقم الهوية</label>
+        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_grade" checked> الصف</label>
+        <label style="display:block;margin-bottom:6px"><input type="checkbox" id="col_class" checked> الفصل</label>
+        <div class="grid-fit" style="margin-top:10px">
+          <button class="btn" onclick="savePE()" style="background:var(--ok);color:#fff">💾 حفظ الخيارات</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🖨 إعدادات طباعة كشف المتابعة -->
+  <div class="accordion" id="acc-print">
+    <div class="acc-head" onclick="toggleAcc('acc-print')">🖨 إعدادات كشف المتابعة</div>
+    <div class="acc-body">
+      <div class="scrollable-acc-content">
+        <div style="background:#f8fafc;padding:8px;border-radius:8px;margin-bottom:10px">
+          <b class="small">إظهار / إخفاء المربعات والأعمدة:</b>
+          <label style="display:block;margin-top:4px"><input type="checkbox" id="chk_show_boxes" checked> إظهار مربعات المتابعة (☐)</label>
+          <hr style="margin:6px 0">
+          <label style="display:block"><input type="checkbox" id="chk_col_behavior" checked> إظهار عمود السلوك</label>
+          <label style="display:block"><input type="checkbox" id="chk_col_book" checked> إظهار عمود الكتاب</label>
+          <label style="display:block"><input type="checkbox" id="chk_col_homework" checked> إظهار عمود الواجبات</label>
+          <label style="display:block"><input type="checkbox" id="chk_col_participation" checked> إظهار عمود المشاركة</label>
+          <label style="display:block"><input type="checkbox" id="chk_col_period" checked> إظهار عمود الفترة</label>
+          <label style="display:block"><input type="checkbox" id="chk_col_total" checked> إظهار عمود المجموع</label>
+        </div>
+
+        <label>📝 اسم عمود السلوك</label>
+        <input type="text" id="col_behavior" value="السلوك">
+        <label>📚 اسم عمود الكتاب</label>
+        <input type="text" id="col_book" value="الكتاب">
+        <label>📘 اسم عمود الواجبات</label>
+        <input type="text" id="col_homework" value="الواجبات">
+        <label>🤝 اسم عمود المشاركة</label>
+        <input type="text" id="col_participation" value="المشاركة">
+        <label>⏳ اسم عمود الفترة</label>
+        <input type="text" id="col_period" value="فترة">
+        <hr>
+        <label>🔤 حجم الخط داخل الكشف (px)</label>
+        <input type="number" id="print_font_size" value="12" min="8" max="18">
+        <label>↕ ارتفاع صف الطالب (px) — الحد الأدنى (يكبر تلقائياً حسب العدد)</label>
+        <input type="number" id="row_height" value="18" min="10" max="30">
+        <label>⬜ عدد المربعات في كل عمود</label>
+        <input type="number" id="box_count" value="10" min="5" max="20">
+        <div class="small" style="margin-top:4px">💡 يُحسب الارتفاع تلقائياً لملء صفحة A4 كاملة حسب عدد الطلاب.</div>
+        <hr>
+        <div class="grid-fit" style="margin-top:6px">
+          <button class="btn" onclick="savePrintSettings()" style="background:var(--ok);color:#fff">💾 حفظ الإعدادات</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔐 تغيير بيانات المشرف (للمشرف فقط) -->
+  <div class="accordion admin-only hidden" id="acc-auth">
+    <div class="acc-head" onclick="toggleAcc('acc-auth')">🔐 بيانات دخول المشرف</div>
+    <div class="acc-body">
+      <div class="grid-2">
+        <div><label>اسم المستخدم الجديد</label><input id="cfg_user" type="text"></div>
+        <div><label>كلمة المرور الجديدة</label><input id="cfg_pass" type="password"></div>
+      </div>
+      <button class="btn" onclick="saveAdminCredentials()" style="background:var(--ok);color:#fff;margin-top:8px">💾 تحديث بيانات الدخول</button>
+    </div>
+  </div>
+
+  <!-- 🖼 الشعار (للمشرف) -->
+  <div class="accordion admin-only hidden" id="acc-logo">
+    <div class="acc-head" onclick="toggleAcc('acc-logo')">🖼️ الشعار</div>
+    <div class="acc-body">
+      <div class="logo-preview">
+        <img id="logoPreview" class="hidden" alt="معاينة الشعار">
+        <span id="logoNone" class="small">لا يوجد شعار حاليًا</span>
+      </div>
+      <div class="grid-fit" style="margin-top:8px">
+        <label class="btn">⬆️ اختر شعار
+          <input id="logoInput" type="file" accept="image/*" hidden>
+        </label>
+        <button class="btn" id="logoRemoveBtn">🗑 حذف الشعار</button>
+      </div>
+      <div class="small" style="margin-top:6px">💡 يتم جلب شعار <b>student.png</b> تلقائيًا من نفس المجلد كشعار افتراضي (إن وُجد).</div>
+    </div>
+  </div>
+
+  <!-- 📄 إعدادات الترويسة (لالمشرف) -->
+  <div class="accordion admin-only hidden" id="acc-header">
+    <div class="acc-head" onclick="toggleAcc('acc-header')">📄 إعدادات الترويسة</div>
+    <div class="acc-body">
+      <div class="grid-2">
+        <div><label>الدولة</label><input id="hdr_country" type="text" value="المملكة العربية السعودية"></div>
+        <div><label>الوزارة</label><input id="hdr_ministry" type="text" value="وزارة التعليم"></div>
+      </div>
+      <div class="grid-2">
+        <div><label>الإدارة التعليمية</label><input id="hdr_directorate" type="text" value="الإدارة العامة للتعليم بمحافظة جدة"></div>
+        <div><label>اسم المدرسة</label><input id="hdr_school" type="text" value="ثانوية الأمير عبدالمجيد الأولى بنين"></div>
+      </div>
+      <div class="grid-fit" style="margin-top:6px">
+        <button class="btn" id="saveHeaderBtn" style="background:var(--ok);color:#fff">💾 حفظ الترويسة</button>
+        <button class="btn" id="resetHeaderBtn">🔁 افتراضي</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.15);display:none;z-index:999" onclick="closeSettings()"></div>
+<div id="toastHost" aria-live="polite"></div>
+
+<script>
+/* ===== بيانات دخول المشرف الافتراضية =====
+   ⚠️ ملاحظة أمنية مهمة: هذه الصفحة HTML بالكامل تعمل في المتصفح دون خادم، لذلك
+   أي "كلمة مرور" مخزّنة هنا (ولو بترميز Base64) يمكن قراءتها من أي شخص يفتح
+   كود الصفحة (View Source). هذا ليس تشفيرًا حقيقيًا، بل مجرد إخفاء بسيط يمنع
+   المستخدم العادي من رؤية كلمة المرور بالصدفة، ولا يمنع شخصًا تقنيًا مُصِرًّا.
+   للحماية الفعلية لبيانات الطلاب (الأسماء وأرقام الهوية والجوالات) يُنصح بشدة
+   بربط الصفحة بخادم/قاعدة بيانات حقيقية مع تسجيل دخول من جهة الخادم بدلاً من
+   الاعتماد فقط على كلمة مرور محلية في المتصفح. غيّر بيانات الدخول الافتراضية
+   فورًا من ⚙️ الإعدادات → بيانات دخول المشرف. */
+const _0x5a1a = "YWJva2FsZWQ="; // abokaled
+const _0x3b8c = "Wm9vbTY0MTA="; // Zoom6410
+
+/* ===== إشعارات خفيفة بدل alert() المزعجة ===== */
+function notify(msg, type){
+  const host = document.getElementById('toastHost');
+  if(!host){ alert(msg); return; }
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  host.appendChild(el);
+  requestAnimationFrame(()=> el.classList.add('show'));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=> el.remove(), 300); }, 3200);
+}
+
+/* ===== حفظ آمن في التخزين المحلي مع معالجة تجاوز السعة ===== */
+function safeSetItem(key, value){
+  try{ localStorage.setItem(key, value); return true; }
+  catch(e){ notify('⚠️ تعذّر الحفظ محليًا (قد تكون مساحة التخزين ممتلئة). حمّل نسخة احتياطية وأفرغ بيانات قديمة.', 'warn'); return false; }
+}
+
+const LS_KEY='students_db_v1', SETTINGS_KEY='students_settings_v1', TPL_KEY='messageTemplates_v1', PE_KEY='printExport_prefs_v1', LOGO_KEY='school_logo_base64_v1';
+const REC_KEY = 'attendance_records_v1'; const HDR_KEY = 'print_header_v1';
+const AUTH_KEY = 'admin_auth_credentials_v1';
+const LOGO_DELETED_KEY = 'school_logo_deleted_v1'; // لمنع عودة student.png بعد حذفه يدويًا
+
+let isAdmin = false;
+
+function checkAndFixOldCredentials() {
+  try {
+    const rawData = localStorage.getItem(AUTH_KEY);
+    if (rawData) {
+      const parsed = JSON.parse(rawData);
+      if (parsed.user === 'admin' || (parsed.u && atob(parsed.u) === 'admin')) {
+        localStorage.removeItem(AUTH_KEY);
+      }
+    }
+  } catch(e) {
+    localStorage.removeItem(AUTH_KEY);
+  }
+}
+
+function getAdminCredentials() {
+  try {
+    const data = JSON.parse(localStorage.getItem(AUTH_KEY));
+    if(data && data.u && data.p) {
+      return { user: atob(data.u), pass: atob(data.p) };
+    }
+    return { user: atob(_0x5a1a), pass: atob(_0x3b8c) };
+  } catch { return { user: atob(_0x5a1a), pass: atob(_0x3b8c) }; }
+}
+
+function updateAuthUI() {
+  const authBtn = $('#authBtn');
+  const adminElems = $$('.admin-only');
+  
+  if (isAdmin) {
+    authBtn.textContent = '🚪 خروج المشرف';
+    authBtn.style.background = '#ef4444';
+    authBtn.style.color = '#fff';
+    adminElems.forEach(el => el.classList.remove('hidden'));
+  } else {
+    authBtn.textContent = '🔐 دخول المشرف';
+    authBtn.style.background = '';
+    authBtn.style.color = '';
+    adminElems.forEach(el => el.classList.add('hidden'));
+  }
+  render();
+}
+
+function toggleAuth() {
+  if (isAdmin) {
+    isAdmin = false;
+    notify('تم تسجيل الخروج بنجاح.');
+    updateAuthUI();
+  } else {
+    openLoginModal();
+  }
+}
+
+function openLoginModal() {
+  $('#loginUser').value = '';
+  $('#loginPass').value = '';
+  $('#loginModal').style.display = 'flex';
+}
+
+function closeLoginModal() {
+  $('#loginModal').style.display = 'none';
+}
+
+function submitLogin() {
+  const u = $('#loginUser').value.trim();
+  const p = $('#loginPass').value.trim();
+  const creds = getAdminCredentials();
+
+  if (u === creds.user && p === creds.pass) {
+    isAdmin = true;
+    closeLoginModal();
+    updateAuthUI();
+    notify('مرحباً بك، تم تسجيل دخول المشرف بنجاح');
+  } else {
+    notify('اسم المستخدم أو كلمة المرور غير صحيحة!');
+  }
+}
+
+function saveAdminCredentials() {
+  const u = $('#cfg_user').value.trim();
+  const p = $('#cfg_pass').value.trim();
+  if (!u || !p) { notify('يرجى ملء كافة حقول الحساب!'); return; }
+  localStorage.setItem(AUTH_KEY, JSON.stringify({ u: btoa(u), p: btoa(p) }));
+  notify('تم تحديث بيانات دخول المشرف بنجاح!');
+}
+
+/* ===== الحالة العامة ===== */
+let students=[], editingUid=null, searchText='', gradeFilter='', classFilter='';
+let selectedUids=new Set();
+let settings={hijriAdjust:0, schoolStart:'07:15'};
+let pePrefs=null; let schoolLogo=null;
+let headerData={country:'المملكة العربية السعودية',ministry:'وزارة التعليم',directorate:'الإدارة العامة للتعليم بمحافظة جدة',school:'ثانوية الأمير عبدالمجيد الأولى بنين'};
+
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const uid=()=> 'S'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const escapeHtml=t=>String(t??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+const localeSort=(a,b)=>a.localeCompare(b,'ar',{numeric:true,sensitivity:'base'});
+
+function toSaudiWhatsApp(numRaw){if(!numRaw)return'';let n=String(numRaw).replace(/\D+/g,'');if(n.startsWith('00966'))n=n.replace(/^00966/,'');if(n.startsWith('966'))n=n.replace(/^966/,'');if(n.startsWith('0'))n=n.slice(1);return '+966'+n}
+function waLink(phone,text){const p=toSaudiWhatsApp(phone).replace(/^\+/,'');return `https://wa.me/${p}?text=${encodeURIComponent(text||'')}`}
+
+function todayInfo(dateObj){
+  const d = dateObj? new Date(dateObj): new Date();
+  const days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const day = days[d.getDay()];
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  const miladi = `${dd} / ${mm} / ${yyyy}`;
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2,'0');
+  const isPM = hours >= 12; const period = isPM ? 'مساءً' : 'صباحًا';
+  if(hours == 0) hours = 12; if(hours > 12) hours -= 12;
+  const time = `${hours}:${minutes} ${period}`;
+  let hijri='';
+  try{
+    const parts = new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(new Date(d.getTime()+ (Number(settings.hijriAdjust||0))*86400000));
+    hijri = `${parts.find(p=>p.type==='day')?.value} / ${parts.find(p=>p.type==='month')?.value} / ${parts.find(p=>p.type==='year')?.value}هـ`;
+  }catch{hijri='(الهجري غير مدعوم)'};
+  return {day,miladi,hijri,time,fullDate:`${miladi} الموافق ${hijri}`};
+}
+
+function defaultPE(){return{columns:{name:true,phone:true,id:true,grade:true,class:true}}}
+function loadPE(){
+  try{pePrefs=JSON.parse(localStorage.getItem(PE_KEY)||'null')||defaultPE()}catch{pePrefs=defaultPE()}
+  const c = pePrefs.columns || {};
+  if($('#col_name')) $('#col_name').checked = c.name !== false;
+  if($('#col_phone')) $('#col_phone').checked = c.phone !== false;
+  if($('#col_id')) $('#col_id').checked = c.id !== false;
+  if($('#col_grade')) $('#col_grade').checked = c.grade !== false;
+  if($('#col_class')) $('#col_class').checked = c.class !== false;
+}
+function savePE(){
+  pePrefs = {
+    columns: {
+      name: $('#col_name').checked,
+      phone: $('#col_phone').checked,
+      id: $('#col_id').checked,
+      grade: $('#col_grade').checked,
+      class: $('#col_class').checked
+    }
+  };
+  localStorage.setItem(PE_KEY, JSON.stringify(pePrefs));
+  notify('تم حفظ إعدادات طباعة الكشوفات العادية.');
+}
+function getSelectedColumns(){ 
+  const order=['name','phone','id','grade','class']; 
+  const labels={name:'اسم الطالب',phone:'الجوال',id:'رقم الهوية',grade:'الصف',class:'الفصل'};
+  const cols = pePrefs?.columns || defaultPE().columns;
+  return { order: order.filter(k => cols[k] !== false), labels };
+}
+
+/* ===== 🖼️ تحميل الشعار (مع جلب تلقائي لـ student.png) ===== */
+async function loadLogo(){
+  try{ schoolLogo = localStorage.getItem(LOGO_KEY) || null; }catch{ schoolLogo = null; }
+
+  // 🖼️ جلب تلقائي لشعار student.png من نفس المجلد كشعار افتراضي
+  if(!schoolLogo){
+    try{
+      const isDeleted = localStorage.getItem(LOGO_DELETED_KEY) === '1';
+      if(!isDeleted){
+        const exists = await new Promise((resolve)=>{
+          const img = new Image();
+          img.onload  = ()=>resolve(true);
+          img.onerror = ()=>resolve(false);
+          img.src = 'student.png';
+        });
+        if(exists) schoolLogo = 'student.png';
+      }
+    }catch(e){ /* تجاهل */ }
+  }
+
+  const headerImg=$('#schoolLogo');
+  if(schoolLogo){headerImg.src=schoolLogo;headerImg.classList.remove('hidden');}
+  else{headerImg.classList.add('hidden');}
+  updateLogoPreview();
+}
+
+function saveLS(){safeSetItem(LS_KEY,JSON.stringify(students));refreshFiltersOptions();render()}
+function loadLS(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'[]');students=Array.isArray(v)?v:[]}catch{students=[]}}
+
+/* ===== دالة تحليل ملف الإكسل ===== */
+function parseExcelData(arrayBuffer) {
+  const data = new Uint8Array(arrayBuffer);
+  const wb = XLSX.read(data, { type: 'array' });
+
+  let ws = wb.Sheets[wb.SheetNames[1]] || wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+  const headerRowIndex = 3;
+  if (!rows[headerRowIndex]) return [];
+
+  const headerRow = rows[headerRowIndex].map(h => String(h || '').trim());
+
+  const col = {
+    phone: headerRow.findIndex(h => /الجوال/i.test(h)),
+    class: headerRow.findIndex(h => /الفصل/i.test(h)),
+    grade: headerRow.findIndex(h => /الصف/i.test(h)),
+    name:  headerRow.findIndex(h => /اسم الطالب/i.test(h)),
+    id:    headerRow.findIndex(h => /رقم الطالب|الهوية/i.test(h))
+  };
+
+  function convertGrade(code) {
+    code = String(code).trim();
+    if (code === "1314") return "الأول الثانوي";
+    if (code === "1416") return "الثاني الثانوي";
+    if (code === "1516") return "الثالث الثانوي";
+    return code;
+  }
+
+  let imported = [];
+  for (let i = headerRowIndex + 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || !r.length) continue;
+
+    const s = {
+      uid: uid(),
+      name:  col.name  >= 0 ? (r[col.name]  || '').toString().trim() : '',
+      phone: col.phone >= 0 ? (r[col.phone] || '').toString().trim() : '',
+      id:    col.id    >= 0 ? (r[col.id]    || '').toString().trim() : '',
+      grade: col.grade >= 0 ? convertGrade(r[col.grade]) : '',
+      class: col.class >= 0 ? (r[col.class] || '').toString().trim() : ''
+    };
+
+    if (s.name) imported.push(s);
+  }
+  return imported;
+}
+
+/* ===== الجلب التلقائي لملف StudentGuidance.xls ===== */
+async function loadDefaultExcelFile() {
+  try {
+    const response = await fetch('StudentGuidance.xls');
+    if (!response.ok) return;
+    const arrayBuffer = await response.arrayBuffer();
+    const imported = parseExcelData(arrayBuffer);
+    if (imported.length > 0) {
+      students = imported;
+      saveLS();
+    }
+  } catch (err) {
+    loadLS();
+  }
+}
+
+/* ===== استيراد ملف Excel يدوياً ===== */
+document.getElementById('excelInput').addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    let imported;
+    try{ imported = parseExcelData(ev.target.result); }
+    catch(err){ notify('⚠️ تعذّرت قراءة الملف. تأكد أن التنسيق مطابق للنموذج المعتمد.', 'warn'); return; }
+
+    if (!imported.length) {
+      notify('⚠️ لا توجد بيانات طلاب مطابقة في الملف', 'warn');
+      return;
+    }
+
+    const existingIds = new Set(students.filter(x=>x.id).map(x=>x.id));
+    const fresh = imported.filter(s => !s.id || !existingIds.has(s.id));
+    const skipped = imported.length - fresh.length;
+
+    students = fresh.concat(students);
+    saveLS();
+    notify(`✅ تم استيراد ${fresh.length} طالب بنجاح` + (skipped ? ` (تم تجاهل ${skipped} مكرر برقم الهوية)` : ''), 'ok');
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function refreshFiltersOptions(){const gradeSel=$('#gradeFilter');if(!gradeSel)return;const grades=[...new Set(students.map(s=>(s.grade||'').trim()).filter(Boolean))].sort(localeSort);const prev=gradeFilter;gradeSel.innerHTML=`<option value="">كل الصفوف</option>`+grades.map(g=>`<option ${g===prev?'selected':''} value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');applyClassOptions();gradeFilter=$('#gradeFilter').value||'';classFilter=$('#classFilter').value||''}
+function applyClassOptions(){const classSel=$('#classFilter');if(!classSel)return;const g=$('#gradeFilter')?.value||'';let classes=[];if(g){classes=[...new Set(students.filter(s=>(s.grade||'').trim()===g).map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}else{classes=[...new Set(students.map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}const keep=classFilter;classSel.disabled=false;classSel.innerHTML=`<option value="">كل الفصول</option>`+classes.map(c=>`<option ${c===keep?'selected':''} value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('')}
+function filterFn(s){const q=(searchText||'').trim().toLowerCase();const mt=!q||((s.name||'').toLowerCase().includes(q)||String(s.id||'').toLowerCase().includes(q));const mg=!gradeFilter||(String(s.grade||'').trim()===gradeFilter);const mc=!classFilter||(String(s.class||'').trim()===classFilter);return mt&&mg&&mc}
+function getFiltered(){return students.filter(filterFn)}
+
+function render(){
+  const tbody=$('#tbody');if(!tbody)return;tbody.innerHTML='';
+  const filtered=getFiltered();
+  
+  filtered.forEach(s=>{
+    const tr=document.createElement('tr');
+    const checked=selectedUids.has(s.uid)?'checked':'';
+    let nameHtml=`<div class="row-meta"><b>${escapeHtml(s.name||'')}</b></div>`;
+    const waUrl=waLink(s.phone,`السلام عليكم ولي أمر ${s.name??''}`);
+    
+    const adminBtns = isAdmin ? `
+      <button class="btn stats-btn" style="padding:6px 9px" data-act="stats" data-uid="${s.uid}" title="إحصائيات ومتابعة" aria-label="متابعة ${escapeHtml(s.name||'')}">📊</button>
+      <button class="btn" style="padding:6px 9px" data-act="edit" data-uid="${s.uid}" title="تعديل" aria-label="تعديل بيانات ${escapeHtml(s.name||'')}">✏</button>
+      <button class="btn" style="padding:6px 9px" data-act="del" data-uid="${s.uid}" title="حذف" aria-label="حذف ${escapeHtml(s.name||'')}">🗑</button>
+    ` : '';
+
+    const checkCell = isAdmin ? `<td><input type="checkbox" class="rowSel" data-uid="${s.uid}" ${checked} aria-label="تحديد ${escapeHtml(s.name||'')}"></td>` : '';
+
+    tr.innerHTML=`
+${checkCell}
+<td>${nameHtml}</td>
+<td class="mono">${escapeHtml(s.phone||'')}</td>
+<td class="mono">${escapeHtml(s.id||'')}</td>
+<td>${escapeHtml(s.grade||'')}</td>
+<td>${escapeHtml(s.class||'')}</td>
+<td>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <a class="btn" style="padding:6px 9px" href="tel:${encodeURIComponent(s.phone||'')}" title="اتصال" aria-label="اتصال بـ ${escapeHtml(s.name||'')}">📞</a>
+    <a class="icon-btn" title="واتساب" aria-label="واتساب ولي أمر ${escapeHtml(s.name||'')}" href="${waUrl}" target="_blank" rel="noopener">🟢</a>
+    ${adminBtns}
+  </div>
+</td>`;
+    tbody.appendChild(tr);
+  });
+
+  if(!filtered.length){
+    const emptyCols = isAdmin ? 7 : 6;
+    tbody.innerHTML = `<tr><td colspan="${emptyCols}" class="empty-state">${students.length? 'لا توجد نتائج مطابقة لبحثك أو الفلاتر الحالية':'لا يوجد طلاب بعد — استخدم "📥 استيراد Excel" لإضافة الطلاب'}</td></tr>`;
+  }
+
+  $('#countTotal').textContent = students.length;
+  
+  const labelEl = $('#filterTagLabel');
+  let matchText = 'مطابقة';
+  
+  if (gradeFilter && classFilter) {
+    matchText = `مطابقة (${gradeFilter} - ${classFilter})`;
+  } else if (gradeFilter) {
+    matchText = `مطابقة (${gradeFilter})`;
+  } else if (classFilter) {
+    matchText = `مطابقة (فصل ${classFilter})`;
+  } else if (searchText.trim()) {
+    matchText = `مطابقة البحث`;
+  } else {
+    matchText = `مطابقة الكل`;
+  }
+  
+  if (labelEl) {
+    labelEl.innerHTML = `${matchText}: <b id="countFiltered">${filtered.length}</b>`;
+  }
+
+  $('#countSelected').textContent = selectedUids.size;
+}
+
+function fillForm(s){$('#f_name').value=s?.name||'';$('#f_phone').value=s?.phone||'';$('#f_id').value=s?.id||'';$('#f_grade').value=s?.grade||'';$('#f_class').value=s?.class||''}
+function clearForm(){editingUid=null;fillForm({});$('#formTitle').textContent='➕ إضافة طالب جديد';$('#cancelEditBtn').classList.add('hidden');$('#saveBtn').textContent='حفظ'}
+function submitForm(){
+  if(!isAdmin)return;
+  const s={name:$('#f_name').value.trim(),phone:$('#f_phone').value.trim(),id:$('#f_id').value.trim(),grade:$('#f_grade').value.trim(),class:$('#f_class').value.trim()};
+  if(!s.name){notify('يرجى إدخال اسم الطالب','warn');return}
+  if(s.id && !/^\d{10}$/.test(s.id)){ if(!confirm('رقم الهوية المدخل ليس 10 أرقام، هل تريد المتابعة؟')) return; }
+  if(s.phone && toSaudiWhatsApp(s.phone).replace('+966','').length < 9){ if(!confirm('رقم الجوال يبدو غير مكتمل، هل تريد المتابعة؟')) return; }
+  if(!editingUid && s.id && students.some(x=>x.id && x.id===s.id)){ if(!confirm('يوجد طالب آخر بنفس رقم الهوية مسبقًا، هل تريد الإضافة رغم ذلك؟')) return; }
+  const wasEditing = !!editingUid;
+  if(editingUid){const i=students.findIndex(x=>x.uid===editingUid);if(i>-1)students[i]={...students[i],...s}}else students.unshift({uid:uid(),...s});
+  saveLS();clearForm();
+  notify(wasEditing?'تم تحديث بيانات الطالب':'تمت إضافة الطالب بنجاح','ok');
+}
+function deleteByUid(u){if(!isAdmin)return;const i=students.findIndex(x=>x.uid===u);if(i>-1){students.splice(i,1);saveLS()}}
+
+document.getElementById('saveBtn').addEventListener('click',submitForm);
+document.getElementById('cancelEditBtn').addEventListener('click',clearForm);
+let _searchDebounce=null;
+document.getElementById('searchBox').addEventListener('input',e=>{
+  const val=e.target.value||'';
+  clearTimeout(_searchDebounce);
+  _searchDebounce=setTimeout(()=>{searchText=val;render()},220);
+});
+document.getElementById('gradeFilter').addEventListener('change',e=>{gradeFilter=e.target.value||'';applyClassOptions();classFilter=document.getElementById('classFilter').value||'';render()});
+document.getElementById('classFilter').addEventListener('change',e=>{classFilter=e.target.value||'';render()});
+document.getElementById('resetFiltersBtn').addEventListener('click',()=>{searchText='';gradeFilter='';classFilter='';document.getElementById('searchBox').value='';refreshFiltersOptions();render()});
+document.getElementById('clearBtn').addEventListener('click',()=>{if(!isAdmin)return;if(confirm('سيتم حذف كل البيانات المخزنة محليًا. هل أنت متأكد؟')){students=[];localStorage.removeItem(REC_KEY);saveLS();clearForm()}});
+document.getElementById('toggleAddFormBtn').addEventListener('click',()=>{document.getElementById('addFormCard').classList.toggle('hidden')});
+
+document.addEventListener('change',e=>{if(e.target.classList.contains('rowSel')){const u=e.target.dataset.uid;e.target.checked?selectedUids.add(u):selectedUids.delete(u);$('#countSelected').textContent=selectedUids.size}});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]'); if(!b) return;
+  const act=b.dataset.act, u=b.dataset.uid;
+  if(act==='stats' && isAdmin){ openStatsModal(u); }
+  else if(act==='edit' && isAdmin){const s=students.find(x=>x.uid===u); if(s){editingUid=u;fillForm(s);$('#formTitle').textContent='✏ تعديل بيانات الطالب';$('#cancelEditBtn').classList.remove('hidden');$('#saveBtn').textContent='تحديث'; if($('#addFormCard').classList.contains('hidden')) $('#addFormCard').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'})}}
+  else if(act==='del' && isAdmin){ if(confirm('حذف هذا الطالب؟')) deleteByUid(u); }
+});
+
+/* ===== 📊 متابعة/إحصائيات كل طالب ===== */
+let currentStatsUid = null;
+function loadRecords(){ try{ return JSON.parse(localStorage.getItem(REC_KEY)||'{}') || {} }catch{ return {} } }
+function saveRecords(rec){ safeSetItem(REC_KEY, JSON.stringify(rec)); }
+function getRecord(u){ const rec=loadRecords(); return rec[u] || {absentCount:0,lateCount:0,contactCount:0,notes:''}; }
+
+function openStatsModal(u){
+  const s = students.find(x=>x.uid===u); if(!s) return;
+  currentStatsUid = u;
+  const r = getRecord(u);
+  $('#statsModalTitle').textContent = `📊 متابعة الطالب: ${s.name||''}`;
+  $('#statAbsentCount').textContent = r.absentCount||0;
+  $('#statLateCount').textContent = r.lateCount||0;
+  $('#statContactCount').textContent = r.contactCount||0;
+  $('#statNotes').value = r.notes||'';
+  $('#statsModal').style.display='flex';
+}
+function closeStatsModal(){ $('#statsModal').style.display='none'; currentStatsUid=null; }
+
+document.getElementById('statsButtons').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-stat]'); if(!b || !currentStatsUid) return;
+  const key = b.dataset.stat;
+  const rec = loadRecords();
+  const cur = rec[currentStatsUid] || {absentCount:0,lateCount:0,contactCount:0,notes:''};
+  cur[key] = (cur[key]||0) + 1;
+  rec[currentStatsUid] = cur;
+  saveRecords(rec);
+  openStatsModal(currentStatsUid);
+});
+
+function saveStudentStats(){
+  if(!currentStatsUid) return;
+  const rec = loadRecords();
+  const cur = rec[currentStatsUid] || {absentCount:0,lateCount:0,contactCount:0,notes:''};
+  cur.notes = $('#statNotes').value;
+  rec[currentStatsUid] = cur;
+  saveRecords(rec);
+  notify('تم حفظ ملاحظات المتابعة','ok');
+}
+function resetStudentStats(){
+  if(!currentStatsUid) return;
+  if(!confirm('سيتم تصفير كل العدادات وحذف الملاحظات لهذا الطالب. هل أنت متأكد؟')) return;
+  const rec = loadRecords();
+  delete rec[currentStatsUid];
+  saveRecords(rec);
+  openStatsModal(currentStatsUid);
+  notify('تمت التصفية','ok');
+}
+
+/* ===== 💾 نسخة احتياطية كاملة ===== */
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  const backup = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    students,
+    headerData,
+    pePrefs: pePrefs || defaultPE(),
+    logo: localStorage.getItem(LOGO_KEY) || null,
+    printSettings: {
+      fontSize: localStorage.getItem('print_font_size'),
+      rowHeight: localStorage.getItem('row_height'),
+      boxCount: localStorage.getItem('box_count')
+    },
+    records: loadRecords()
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const t = todayInfo();
+  a.href = url; a.download = `نسخة_احتياطية_${t.miladi.replace(/\s/g,'')}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  notify('تم تنزيل النسخة الاحتياطية بنجاح','ok');
+});
+
+document.getElementById('restoreInput').addEventListener('change', e=>{
+  const file = e.target.files?.[0]; e.target.value='';
+  if(!file || !isAdmin) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    let data;
+    try{ data = JSON.parse(ev.target.result); }
+    catch{ notify('⚠️ الملف ليس بصيغة JSON صالحة','warn'); return; }
+    if(!data || !Array.isArray(data.students)){ notify('⚠️ الملف لا يحتوي على بيانات طلاب صالحة','warn'); return; }
+    if(!confirm(`سيتم استبدال بيانات الطلاب الحالية (${students.length}) بعدد ${data.students.length} من النسخة الاحتياطية. متابعة؟`)) return;
+
+    students = data.students;
+    if(data.headerData && typeof data.headerData === 'object') headerData = {...headerData, ...data.headerData};
+    if(data.pePrefs) pePrefs = data.pePrefs;
+    if(data.logo){
+      safeSetItem(LOGO_KEY, data.logo);
+      localStorage.removeItem(LOGO_DELETED_KEY);
+    }
+    if(data.printSettings){
+      if(data.printSettings.fontSize) safeSetItem('print_font_size', data.printSettings.fontSize);
+      if(data.printSettings.rowHeight) safeSetItem('row_height', data.printSettings.rowHeight);
+      if(data.printSettings.boxCount) safeSetItem('box_count', data.printSettings.boxCount);
+    }
+    if(data.records && typeof data.records === 'object') saveRecords(data.records);
+
+    safeSetItem(HDR_KEY, JSON.stringify(headerData));
+    safeSetItem(PE_KEY, JSON.stringify(pePrefs||defaultPE()));
+    saveLS();
+    loadHeaderData(); loadLogo(); loadPE(); updateLogoPreview();
+    notify('✅ تمت استعادة النسخة الاحتياطية بنجاح','ok');
+  };
+  reader.readAsText(file, 'utf-8');
+});
+
+/* ===== 🖼️ شعار المدرسة ===== */
+function updateLogoPreview(){
+  const img = $('#logoPreview'), none = $('#logoNone');
+  if(!img || !none) return;
+  if(schoolLogo){ img.src = schoolLogo; img.classList.remove('hidden'); none.classList.add('hidden'); }
+  else { img.classList.add('hidden'); none.classList.remove('hidden'); }
+}
+document.getElementById('logoInput').addEventListener('change', e=>{
+  const file = e.target.files?.[0]; e.target.value='';
+  if(!file || !isAdmin) return;
+  if(!file.type.startsWith('image/')){ notify('يرجى اختيار ملف صورة صالح (PNG أو JPG)','warn'); return; }
+  if(file.size > 2*1024*1024){ notify('حجم الصورة كبير جدًا، يُفضّل صورة أصغر من 2 ميجابايت','warn'); }
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const dataUrl = ev.target.result;
+    if(safeSetItem(LOGO_KEY, dataUrl)){
+      localStorage.removeItem(LOGO_DELETED_KEY);
+      schoolLogo = dataUrl;
+      loadLogo();
+      updateLogoPreview();
+      notify('تم حفظ شعار المدرسة','ok');
+    }
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById('logoRemoveBtn').addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  if(!schoolLogo){ notify('لا يوجد شعار لحذفه','warn'); return; }
+  if(!confirm('حذف شعار المدرسة الحالي؟')) return;
+  localStorage.removeItem(LOGO_KEY);
+  safeSetItem(LOGO_DELETED_KEY, '1');
+  schoolLogo = null;
+  loadLogo();
+  updateLogoPreview();
+  notify('تم حذف الشعار','ok');
+});
+
+/* ===== 📄 إعدادات الترويسة الرسمية ===== */
+document.getElementById('saveHeaderBtn').addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  headerData = {
+    country: $('#hdr_country').value.trim(),
+    ministry: $('#hdr_ministry').value.trim(),
+    directorate: $('#hdr_directorate').value.trim(),
+    school: $('#hdr_school').value.trim()
+  };
+  safeSetItem(HDR_KEY, JSON.stringify(headerData));
+  notify('تم حفظ بيانات الترويسة','ok');
+});
+document.getElementById('resetHeaderBtn').addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  if(!confirm('استعادة بيانات الترويسة الافتراضية؟')) return;
+  headerData = {country:'المملكة العربية السعودية',ministry:'وزارة التعليم',directorate:'الإدارة العامة للتعليم بمحافظة جدة',school:'ثانوية الأمير عبدالمجيد الأولى بنين'};
+  safeSetItem(HDR_KEY, JSON.stringify(headerData));
+  loadHeaderData();
+  notify('تمت استعادة الترويسة الافتراضية','ok');
+});
+
+/* ===== 📩 الرسائل الجماعية عبر واتساب ===== */
+function applyMessageTemplate(){
+  const key = $('#templateSelect')?.value;
+  const t = todayInfo();
+  const templates = {
+    delay: `السلام عليكم ورحمة الله، نفيدكم بأن الطالب {name} قد تأخر عن الحضور للمدرسة صباح اليوم ${t.miladi}م، نأمل الحرص على الحضور في الوقت المحدد.\nإدارة المدرسة`,
+    absent: `السلام عليكم ورحمة الله، نفيدكم بغياب الطالب {name} عن المدرسة اليوم ${t.miladi}م، نأمل التواصل مع إدارة المدرسة لمعرفة السبب.\nإدارة المدرسة`,
+    custom: ''
+  };
+  if($('#bulkMsg')) $('#bulkMsg').value = templates[key] ?? '';
+}
+document.getElementById('templateSelect')?.addEventListener('change', applyMessageTemplate);
+
+document.getElementById('selectAllFiltered')?.addEventListener('change', e=>{
+  if(!isAdmin) return;
+  const filtered = getFiltered();
+  if(e.target.checked){ filtered.forEach(s=> selectedUids.add(s.uid)); }
+  else { filtered.forEach(s=> selectedUids.delete(s.uid)); }
+  const lbl = $('#selectAllFilteredLabel');
+  if(lbl){ lbl.style.background = e.target.checked ? 'var(--ok)' : ''; lbl.style.color = e.target.checked ? '#fff' : ''; }
+  render();
+});
+
+let _bulkLinks = [];
+function buildBulkLinks(){
+  const chosen = students.filter(s=>selectedUids.has(s.uid));
+  if(!chosen.length){ notify('يرجى تحديد طالب واحد على الأقل من عمود "تحديد" في الجدول','warn'); return []; }
+  const withoutPhone = chosen.filter(s=>!s.phone).length;
+  const template = $('#bulkMsg')?.value || '';
+  const links = chosen.filter(s=>s.phone).map(s=>({ uid:s.uid, name:s.name||'', url: waLink(s.phone, template.replaceAll('{name}', s.name||'')) }));
+  if(withoutPhone) notify(`تنبيه: ${withoutPhone} من الطلاب المحددين بلا رقم جوال وتم تجاهلهم`, 'warn');
+  return links;
+}
+function renderBulkLinks(){
+  const host = $('#bulkLinks'); if(!host) return;
+  if(!_bulkLinks.length){ host.classList.add('hidden'); host.innerHTML=''; return; }
+  host.classList.remove('hidden');
+  host.innerHTML = _bulkLinks.map(l=>`<div class="wa-link-item" data-uid="${l.uid}"><span>${escapeHtml(l.name)}</span><a href="${l.url}" target="_blank" rel="noopener">🟢 فتح واتساب</a></div>`).join('');
+}
+document.getElementById('bulkWhatsAppBtn')?.addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  _bulkLinks = buildBulkLinks();
+  renderBulkLinks();
+  if(_bulkLinks.length) notify(`تم تجهيز ${_bulkLinks.length} رابط واتساب`, 'ok');
+});
+
+let autoSendTimer=null, autoSendIndex=0, autoSendRunning=false;
+function setAutoSendButtons(running){
+  if($('#startAutoBtn')) $('#startAutoBtn').disabled = running;
+  if($('#bulkWhatsAppBtn')) $('#bulkWhatsAppBtn').disabled = running;
+  if($('#stopAutoBtn')) $('#stopAutoBtn').disabled = !running;
+}
+function stepAutoSend(){
+  if(!autoSendRunning || autoSendIndex >= _bulkLinks.length){ stopAutoSend(true); return; }
+  const item = _bulkLinks[autoSendIndex];
+  window.open(item.url, '_blank', 'noopener');
+  const row = document.querySelector(`.wa-link-item[data-uid="${item.uid}"]`);
+  if(row) row.classList.add('sent');
+  autoSendIndex++;
+  autoSendTimer = setTimeout(stepAutoSend, 3000);
+}
+function stopAutoSend(finished){
+  autoSendRunning = false;
+  clearTimeout(autoSendTimer);
+  setAutoSendButtons(false);
+  if(finished) notify('انتهى إرسال جميع الروابط المحددة','ok');
+}
+document.getElementById('startAutoBtn')?.addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  if(!_bulkLinks.length){ _bulkLinks = buildBulkLinks(); renderBulkLinks(); }
+  if(!_bulkLinks.length) return;
+  autoSendRunning = true; autoSendIndex = 0;
+  setAutoSendButtons(true);
+  notify('بدأ الإرسال التلقائي — ستُفتح نافذة واتساب لكل طالب بالتتابع كل 3 ثوانٍ، وعليك الضغط على "إرسال" داخل واتساب لكل رسالة.', 'ok');
+  stepAutoSend();
+});
+document.getElementById('stopAutoBtn')?.addEventListener('click', ()=> stopAutoSend(false));
+
+document.getElementById('bulkDeleteBtn')?.addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  if(!selectedUids.size){ notify('لم يتم تحديد أي طالب للحذف','warn'); return; }
+  if(!confirm(`سيتم حذف ${selectedUids.size} طالب محدد نهائيًا من السجل. هل أنت متأكد؟`)) return;
+  students = students.filter(s=>!selectedUids.has(s.uid));
+  selectedUids.clear();
+  _bulkLinks = []; renderBulkLinks();
+  saveLS();
+  notify('تم حذف الطلاب المحددين','ok');
+});
+
+function loadHeaderData(){
+  try{ const v=JSON.parse(localStorage.getItem(HDR_KEY)||'null'); if(v&&typeof v==='object'){ headerData={...headerData,...v}; } }catch{}
+  if($('#hdr_country')) $('#hdr_country').value = headerData.country||'';
+  if($('#hdr_ministry')) $('#hdr_ministry').value = headerData.ministry||'';
+  if($('#hdr_directorate')) $('#hdr_directorate').value = headerData.directorate||'';
+  if($('#hdr_school')) $('#hdr_school').value = headerData.school||'';
+}
+
+function buildOfficialHeaderHTML(){
+  const logoImg = schoolLogo || localStorage.getItem(LOGO_KEY) || '';
+  const t=todayInfo();
+  return `
+  <div class="header-plain">
+    <div class="col right">
+      ${escapeHtml(headerData.country||'')}<br>${escapeHtml(headerData.ministry||'')}
+    </div>
+    <div class="col center">${logoImg?`<img src="${logoImg}" style="max-height:70px;max-width:160px;object-fit:contain" alt="الشعار">`:''}</div>
+    <div class="col left" style="text-align:left">
+      ${escapeHtml(headerData.directorate||'')}<br>${escapeHtml(headerData.school||'')}
+    </div>
+  </div>
+  <div class="header-date">التاريخ: ${t.hijri} الموافق ${t.miladi}</div>`;
+}
+
+/* ✅ دالة مشتركة لبناء صفحة كشف قابلة للطباعة */
+function buildRosterPrintHtml(data, opts){
+  const t=todayInfo();
+  const {order, labels} = getSelectedColumns();
+  if(!order.length){notify('يرجى تحديد عمود واحد على الأقل للطباعة من الإعدادات!','warn');return null}
+  if(!data.length){notify('لا توجد بيانات لطباعتها','warn');return null}
+
+  const headerHTML = buildOfficialHeaderHTML();
+  const thCols = `<tr><th>الرقم</th>${order.map(k=>`<th>${escapeHtml(labels[k])}</th>`).join('')}</tr>`;
+  const rows = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
+
+  return `<html dir="rtl"><head><meta charset="utf-8"><title>${escapeHtml(opts.title||'كشف الطلاب')}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 10mm 10mm 15mm 10mm;
+      @bottom-center {
+        content: "صفحة " counter(page) " من " counter(pages);
+        font-family: Cairo, sans-serif;
+        font-size: 11px;
+      }
+    }
+    body { font-family: Cairo, sans-serif; margin: 0; }
+    h2 { margin: 4px 0 2px 0; text-align: center; font-size: 16px; }
+    .sub-title { text-align: center; margin: 0 0 8px 0; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    tr { page-break-inside: avoid; }
+    th, td { border: 1px solid #000; padding: 5px; font-size: 12px; text-align: center; }
+    th { background: #f0f0f0; font-weight: bold; }
+    .header-plain { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+    .header-date { text-align: center; margin: 2px 0 6px 0; font-size: 11px; }
+  </style>
+  </head><body>
+
+  <table>
+    <thead>
+      <tr>
+        <td colspan="${order.length + 1}" style="border:none; padding:0; text-align:stretch;">
+          ${headerHTML}
+          <h2>📋 ${escapeHtml(opts.title||'كشف الطلاب')}</h2>
+          <div class="sub-title">${escapeHtml(opts.subtitle||'')} | التاريخ: ${t.fullDate}</div>
+        </td>
+      </tr>
+      ${thCols}
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  <script>
+    window.onload = function() {
+      var imgs = Array.prototype.slice.call(document.images);
+      var ready = imgs.every(function(i){ return i.complete; });
+      function go(){ window.print(); setTimeout(function(){ window.close(); }, 500); }
+      if(ready){ go(); } else { window.setTimeout(go, 350); }
+    };
+  <\/script>
+  </body></html>`;
+}
+
+function openPrintWindow(html){
+  if(!html) return;
+  const w=window.open('','_blank');
+  if(!w){ notify('يرجى السماح بالنوافذ المنبثقة لهذا الموقع لتتمكن من الطباعة','warn'); return; }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+}
+
+/* ✅ طباعة الكشف المصفّى */
+function printTableOnly(){
+  const data=getFiltered();
+  const grade=gradeFilter||'كل الصفوف', cls=classFilter||'كل الفصول';
+  const html = buildRosterPrintHtml(data, { title:'كشف الطلاب', subtitle:`الصف: ${grade} — الفصل: ${cls}` });
+  openPrintWindow(html);
+}
+document.getElementById('printBtn').addEventListener('click',printTableOnly);
+
+/* ✅ استخراج PDF لجميع طلاب المدرسة */
+function printAllStudentsPdf(){
+  if(!students.length){ notify('لا يوجد طلاب لاستخراج كشف PDF لهم','warn'); return; }
+  const html = buildRosterPrintHtml(students, { title:'كشف عام لجميع طلاب المدرسة', subtitle:`إجمالي عدد الطلاب: ${students.length}` });
+  if(!html) return;
+  openPrintWindow(html);
+  notify('من نافذة الطباعة التي فُتحت، اختر الوجهة "حفظ كـ PDF" لتنزيل الملف', 'ok');
+}
+document.getElementById('exportAllPdfBtn').addEventListener('click', printAllStudentsPdf);
+
+function exportFilteredExcel(){
+  const data=getFiltered(); if(!data.length){notify('لا توجد بيانات لتصديرها.');return}
+  const {order, labels} = getSelectedColumns();
+  if(!order.length){notify('يرجى تحديد عمود واحد على الأقل للتصدير من الإعدادات!');return}
+  const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = s[k] || ''; }); return obj; });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const t=todayInfo();
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'الطلاب');
+  XLSX.writeFile(wb,`كشف_الطلاب_${t.miladi}.xlsx`);
+}
+document.getElementById('exportExcelBtn').addEventListener('click',exportFilteredExcel);
+
+/* ===== ✅ دالة طباعة كشف المتابعة (مع حساب تلقائي لارتفاع الصف لملء A4) ===== */
+function printFilteredGradeReport() {
+    let data = getFiltered();
+    if (!data.length) data = students;
+    if (!data.length) { notify("لا توجد بيانات طلاب للطباعة"); return; }
+
+    const showBoxes = $('#chk_show_boxes')?.checked !== false;
+    const colsVis = {
+      behavior: $('#chk_col_behavior')?.checked !== false,
+      book: $('#chk_col_book')?.checked !== false,
+      homework: $('#chk_col_homework')?.checked !== false,
+      participation: $('#chk_col_participation')?.checked !== false,
+      period: $('#chk_col_period')?.checked !== false,
+      total: $('#chk_col_total')?.checked !== false
+    };
+
+    const colLabels = {
+      behavior: escapeHtml($('#col_behavior')?.value || "السلوك"),
+      book: escapeHtml($('#col_book')?.value || "الكتاب"),
+      homework: escapeHtml($('#col_homework')?.value || "الواجبات"),
+      participation: escapeHtml($('#col_participation')?.value || "المشاركة"),
+      period: escapeHtml($('#col_period')?.value || "فترة")
+    };
+
+    // 🔤 حجم الخط بالـ pt (وحدة طباعة فعلية)
+    const userFontSize = parseInt($('#print_font_size')?.value) || 12;
+    // نحوّل من px إلى pt تقريبياً (1px ≈ 0.75pt)
+    const fontSizePt = Math.max(8, Math.min(14, Math.round(userFontSize * 0.75)));
+
+    const boxCount = parseInt($('#box_count')?.value) || 10;
+    const userRowHeightMm = Math.max(5, (parseInt($('#row_height')?.value) || 18) / 4);
+
+    // ✅ حساب ارتفاع الصف بالـ mm لملء صفحة A4 كاملة حسب عدد الطلاب
+    // A4: 297mm ارتفاع، هوامش 5mm أعلى وأسفل = 287mm صافي
+    // نطرح ترويسة (~28mm) + رأس الجدول (~7mm) + ترقيم الصفحة (~5mm) = ~40mm
+    const AVAILABLE_MM = 247;
+    const totalStudents = Math.max(data.length, 1);
+    const autoRowHeightMm = Math.max(
+      userRowHeightMm,
+      Math.min(11, AVAILABLE_MM / totalStudents)
+    );
+    const rowHeightMm = autoRowHeightMm.toFixed(2);
+
+    function buildBoxes(count) {
+        if (!showBoxes) return "";
+        let row1 = "", row2 = "";
+        let half = Math.ceil(count / 2);
+        for (let i = 0; i < count; i++) {
+            if (i < half) row1 += "☐ ";
+            else row2 += "☐ ";
+        }
+        return `<div style="line-height:1.1;">${row1}<br>${row2}</div>`;
+    }
+
+    const t = todayInfo();
+    const gradeName = escapeHtml(gradeFilter || "جميع الصفوف");
+    const className = escapeHtml(classFilter || "جميع الفصول");
+    const logo = schoolLogo ? `<img src="${schoolLogo}" style="max-height:18mm; max-width:35mm; object-fit:contain;">` : "";
+
+    const header = `
+    <div style="font-size:${fontSizePt}pt; text-align:center; line-height:1.4; margin-bottom:2mm;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="text-align:right;">${escapeHtml(headerData.country)}<br>${escapeHtml(headerData.ministry)}</div>
+            <div>${logo}</div>
+            <div style="text-align:left;">${escapeHtml(headerData.directorate)}<br>${escapeHtml(headerData.school)}</div>
+        </div>
+        <div style="margin-top:2mm; font-weight:bold; font-size:${fontSizePt + 2}pt;">كشف متابعة الصف ${gradeName} – الفصل ${className}</div>
+        <div style="font-size:${Math.max(8, fontSizePt - 1)}pt;">التاريخ: ${t.hijri} الموافق ${t.miladi}</div>
+    </div>`;
+
+    let colCount = 2;
+    let ths = `<th>م</th><th>اسم الطالب</th>`;
+    if(colsVis.behavior) { ths += `<th>${colLabels.behavior}</th>`; colCount++; }
+    if(colsVis.book) { ths += `<th>${colLabels.book}</th>`; colCount++; }
+    if(colsVis.homework) { ths += `<th>${colLabels.homework}</th>`; colCount++; }
+    if(colsVis.participation) { ths += `<th>${colLabels.participation}</th>`; colCount++; }
+    if(colsVis.period) { ths += `<th>${colLabels.period}</th>`; colCount++; }
+    if(colsVis.total) { ths += `<th>المجموع</th>`; colCount++; }
+
+    let rows = "";
+    data.forEach((s, i) => {
+        rows += `<tr><td>${i + 1}</td><td style="text-align:right; padding-right:1.5mm;">${escapeHtml(s.name)}</td>`;
+        if(colsVis.behavior) rows += `<td>${buildBoxes(boxCount)}</td>`;
+        if(colsVis.book) rows += `<td>${buildBoxes(boxCount)}</td>`;
+        if(colsVis.homework) rows += `<td>${buildBoxes(boxCount)}</td>`;
+        if(colsVis.participation) rows += `<td>${buildBoxes(boxCount)}</td>`;
+        if(colsVis.period) rows += `<td>${buildBoxes(boxCount)}</td>`;
+        if(colsVis.total) rows += `<td>${buildBoxes(boxCount)}</td>`;
+        rows += `</tr>`;
+    });
+
+    const html = `
+    <html dir="rtl"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=210mm, initial-scale=1.0">
+    <style>
+        @page {
+          size: A4 portrait;
+          margin: 5mm;
+          @bottom-center {
+            content: "صفحة " counter(page) " من " counter(pages);
+            font-family: Cairo, sans-serif;
+            font-size: 8pt;
+          }
+        }
+        * { box-sizing: border-box; }
+        html {
+          width: 210mm;
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          width: 200mm;
+          font-family: "Cairo", sans-serif;
+          font-size: ${fontSizePt}pt;
+        }
+        table {
+          width: 100%;
+          min-height: 275mm;
+          border-collapse: collapse;
+          table-layout: fixed;
+        }
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+        tr { page-break-inside: avoid; }
+        th, td {
+          border: 1px solid #000;
+          padding: 0.3mm;
+          text-align: center;
+          vertical-align: middle;
+          height: ${rowHeightMm}mm;
+          font-size: ${fontSizePt}pt;
+          overflow: hidden;
+          word-wrap: break-word;
+        }
+        th {
+          background: #f0f0f0;
+          font-weight: bold;
+          height: 6.5mm;
+        }
+        .header-cell {
+          border: none;
+          padding: 0;
+          height: auto;
+          text-align: right;
+        }
+    </style>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <tr>
+                    <td colspan="${colCount}" class="header-cell">
+                        ${header}
+                    </td>
+                </tr>
+                <tr>${ths}</tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <script>
+          window.onload = function() {
+            var imgs = Array.prototype.slice.call(document.images);
+            var ready = imgs.every(function(i){ return i.complete; });
+            function go(){
+              window.focus();
+              window.print();
+              setTimeout(function(){ window.close(); }, 700);
+            }
+            if(ready){ setTimeout(go, 200); } else { window.setTimeout(go, 600); }
+          };
+        <\/script>
+    </body></html>`;
+
+    const w = window.open('', '_blank');
+    if(!w){ notify('يرجى السماح بالنوافذ المنبثقة لهذا الموقع','warn'); return; }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+}
+
+function openSettings(){
+  const creds = getAdminCredentials();
+  if($('#cfg_user')) $('#cfg_user').value = creds.user;
+  if($('#cfg_pass')) $('#cfg_pass').value = creds.pass;
+  updateLogoPreview();
+  $('#settingsPanel').classList.add('open');
+  $('#settingsOverlay').style.display='block';
+}
+
+function closeSettings(){ 
+  $('#settingsPanel').classList.remove('open'); 
+  $('#settingsOverlay').style.display='none';
+}
+
+function toggleAcc(id){ 
+  const targetAcc = document.getElementById(id);
+  if(!targetAcc) return;
+  
+  const isOpen = targetAcc.classList.contains('open');
+  $$('.accordion').forEach(acc => acc.classList.remove('open'));
+  
+  if(!isOpen) {
+    targetAcc.classList.add('open');
+  }
+}
+
+function savePrintSettings() {
+    localStorage.setItem("print_font_size", document.getElementById("print_font_size").value);
+    localStorage.setItem("row_height", document.getElementById("row_height").value);
+    localStorage.setItem("box_count", document.getElementById("box_count").value);
+    notify("✅ تم حفظ إعدادات طباعة كشف المتابعة بنجاح");
+}
+
+/* ===== إتاحة الوصول ===== */
+document.addEventListener('keydown', e=>{
+  if(e.key !== 'Escape') return;
+  if($('#loginModal').style.display === 'flex') closeLoginModal();
+  else if($('#statsModal').style.display === 'flex') closeStatsModal();
+  else if($('#settingsPanel').classList.contains('open')) closeSettings();
+});
+$('#loginUser')?.addEventListener('keydown', e=>{ if(e.key==='Enter') $('#loginPass').focus(); });
+$('#loginPass')?.addEventListener('keydown', e=>{ if(e.key==='Enter') submitLogin(); });
+
+async function init(){
+  checkAndFixOldCredentials();
+  loadHeaderData();
+  await loadLogo(); // جلب تلقائي لشعار student.png
+  loadPE();
+  updateLogoPreview();
+  applyMessageTemplate();
+
+  // ⚡ جلب ملف StudentGuidance.xls تلقائياً
+  await loadDefaultExcelFile();
+
+  refreshFiltersOptions();
+  updateAuthUI();
+}
+init();
+</script>
+</body>
+</html>
