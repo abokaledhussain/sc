@@ -686,7 +686,15 @@ const uid=()=> 'S'+Math.random().toString(36).slice(2,10)+Date.now().toString(36
 const escapeHtml=t=>String(t??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
 const localeSort=(a,b)=>a.localeCompare(b,'ar',{numeric:true,sensitivity:'base'});
 
-function toSaudiWhatsApp(numRaw){if(!numRaw)return'';let n=String(numRaw).replace(/\D+/g,'');if(n.startsWith('00966'))n=n.replace(/^00966/,'');if(n.startsWith('966'))n=n.replace(/^966/,'');if(n.startsWith('0'))n=n.slice(1);return '+966'+n}
+function toSaudiWhatsApp(numRaw) {
+    if (!numRaw) return '';
+    let n = String(numRaw).trim().replace(/\D+/g, ''); // إزالة أي رموز غير رقمية
+    if (n.startsWith('00966')) n = n.slice(5);
+    else if (n.startsWith('966')) n = n.slice(3);
+    else if (n.startsWith('0')) n = n.slice(1);
+    
+    return '+966' + n;
+}
 function waLink(phone,text){const p=toSaudiWhatsApp(phone).replace(/^\+/,'');return `https://wa.me/${p}?text=${encodeURIComponent(text||'')}`}
 
 function todayInfo(dateObj){
