@@ -552,15 +552,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 <div id="toastHost" aria-live="polite"></div>
 
 <script>
-/* ===== بيانات دخول المشرف الافتراضية =====
-   ⚠️ ملاحظة أمنية مهمة: هذه الصفحة HTML بالكامل تعمل في المتصفح دون خادم، لذلك
-   أي "كلمة مرور" مخزّنة هنا (ولو بترميز Base64) يمكن قراءتها من أي شخص يفتح
-   كود الصفحة (View Source). هذا ليس تشفيرًا حقيقيًا، بل مجرد إخفاء بسيط يمنع
-   المستخدم العادي من رؤية كلمة المرور بالصدفة، ولا يمنع شخصًا تقنيًا مُصِرًّا.
-   للحماية الفعلية لبيانات الطلاب (الأسماء وأرقام الهوية والجوالات) يُنصح بشدة
-   بربط الصفحة بخادم/قاعدة بيانات حقيقية مع تسجيل دخول من جهة الخادم بدلاً من
-   الاعتماد فقط على كلمة مرور محلية في المتصفح. غيّر بيانات الدخول الافتراضية
-   فورًا من ⚙️ الإعدادات → بيانات دخول المشرف. */
 const _0x5a1a = "YWJva2FsZWQ="; // abokaled
 const _0x3b8c = "Wm9vbTY0MTA="; // Zoom6410
 
@@ -585,7 +576,7 @@ function safeSetItem(key, value){
 const LS_KEY='students_db_v1', SETTINGS_KEY='students_settings_v1', TPL_KEY='messageTemplates_v1', PE_KEY='printExport_prefs_v1', LOGO_KEY='school_logo_base64_v1';
 const REC_KEY = 'attendance_records_v1'; const HDR_KEY = 'print_header_v1';
 const AUTH_KEY = 'admin_auth_credentials_v1';
-const LOGO_DELETED_KEY = 'school_logo_deleted_v1'; // لمنع عودة student.png بعد حذفه يدويًا
+const LOGO_DELETED_KEY = 'school_logo_deleted_v1';
 
 let isAdmin = false;
 
@@ -686,15 +677,16 @@ const uid=()=> 'S'+Math.random().toString(36).slice(2,10)+Date.now().toString(36
 const escapeHtml=t=>String(t??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
 const localeSort=(a,b)=>a.localeCompare(b,'ar',{numeric:true,sensitivity:'base'});
 
-function toSaudiWhatsApp(numRaw) {
-    if (!numRaw) return '';
-    let n = String(numRaw).trim().replace(/\D+/g, ''); // إزالة أي رموز غير رقمية
-    if (n.startsWith('00966')) n = n.slice(5);
-    else if (n.startsWith('966')) n = n.slice(3);
-    else if (n.startsWith('0')) n = n.slice(1);
-    
-    return '+966' + n;
+/* ✅ الدالة المُعدّلة لإضافة + قبل 966 تلقائياً */
+function toSaudiWhatsApp(numRaw){
+  if(!numRaw) return '';
+  let n = String(numRaw).trim().replace(/\D+/g, '');
+  if(n.startsWith('00966')) n = n.slice(5);
+  else if(n.startsWith('966')) n = n.slice(3);
+  else if(n.startsWith('0')) n = n.slice(1);
+  return '+966' + n;
 }
+
 function waLink(phone,text){const p=toSaudiWhatsApp(phone).replace(/^\+/,'');return `https://wa.me/${p}?text=${encodeURIComponent(text||'')}`}
 
 function todayInfo(dateObj){
@@ -752,7 +744,6 @@ function getSelectedColumns(){
 async function loadLogo(){
   try{ schoolLogo = localStorage.getItem(LOGO_KEY) || null; }catch{ schoolLogo = null; }
 
-  // 🖼️ جلب تلقائي لشعار student.png من نفس المجلد كشعار افتراضي
   if(!schoolLogo){
     try{
       const isDeleted = localStorage.getItem(LOGO_DELETED_KEY) === '1';
@@ -869,7 +860,7 @@ document.getElementById('excelInput').addEventListener('change', async (e) => {
   reader.readAsArrayBuffer(file);
 });
 
-function refreshFiltersOptions(){const gradeSel=$('#gradeFilter');if(!gradeSel)return;const grades=[...new Set(students.map(s=>(s.grade||'').trim()).filter(Boolean))].sort(localeSort);const prev=gradeFilter;gradeSel.innerHTML=`<option value="">كل الصفوف</option>`+grades.map(g=>`<option ${g===prev?'selected':''} value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');applyClassOptions();gradeFilter=$('#gradeFilter').value||'';classFilter=$('#classFilter').value||''}
+function refreshFiltersOptions(){const gradeSel=$('#gradeFilter');if(!gradeSel)return;const grades=[...new Set(students.map(s=>(s.grade||'').trim()).filter(Boolean))].sort(localeSort);const prev=gradeFilter;gradeSel.innerHTML=`<option value="">كل الصفوف</option>`+grades.map(g=>`<option ${g===prev?'selected':''} value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');applyClassOptions();gradeFilter=$('#gradeFilter').value\vert{}\vert{}'';classFilter=$('#classFilter').value||''}
 function applyClassOptions(){const classSel=$('#classFilter');if(!classSel)return;const g=$('#gradeFilter')?.value||'';let classes=[];if(g){classes=[...new Set(students.filter(s=>(s.grade||'').trim()===g).map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}else{classes=[...new Set(students.map(s=>(s.class||'').trim()).filter(Boolean))].sort(localeSort)}const keep=classFilter;classSel.disabled=false;classSel.innerHTML=`<option value="">كل الفصول</option>`+classes.map(c=>`<option ${c===keep?'selected':''} value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('')}
 function filterFn(s){const q=(searchText||'').trim().toLowerCase();const mt=!q||((s.name||'').toLowerCase().includes(q)||String(s.id||'').toLowerCase().includes(q));const mg=!gradeFilter||(String(s.grade||'').trim()===gradeFilter);const mc=!classFilter||(String(s.class||'').trim()===classFilter);return mt&&mg&&mc}
 function getFiltered(){return students.filter(filterFn)}
@@ -895,7 +886,7 @@ function render(){
     tr.innerHTML=`
 ${checkCell}
 <td>${nameHtml}</td>
-<td class="mono">${escapeHtml(s.phone||'')}</td>
+<td class="mono">${escapeHtml(toSaudiWhatsApp(s.phone)| me||'')}</td>
 <td class="mono">${escapeHtml(s.id||'')}</td>
 <td>${escapeHtml(s.grade||'')}</td>
 <td>${escapeHtml(s.class||'')}</td>
@@ -938,7 +929,7 @@ ${checkCell}
   $('#countSelected').textContent = selectedUids.size;
 }
 
-function fillForm(s){$('#f_name').value=s?.name||'';$('#f_phone').value=s?.phone||'';$('#f_id').value=s?.id||'';$('#f_grade').value=s?.grade||'';$('#f_class').value=s?.class||''}
+function fillForm(s){$('#f_name').value=s?.name||'';$('#f_phone').value=s?.phone\vert{}\vert{}'';$('#f_id').value=s?.id||'';$('#f_grade').value=s?.grade\vert{}\vert{}'';$('#f_class').value=s?.class||''}
 function clearForm(){editingUid=null;fillForm({});$('#formTitle').textContent='➕ إضافة طالب جديد';$('#cancelEditBtn').classList.add('hidden');$('#saveBtn').textContent='حفظ'}
 function submitForm(){
   if(!isAdmin)return;
@@ -1267,7 +1258,7 @@ function buildRosterPrintHtml(data, opts){
 
   const headerHTML = buildOfficialHeaderHTML();
   const thCols = `<tr><th>الرقم</th>${order.map(k=>`<th>${escapeHtml(labels[k])}</th>`).join('')}</tr>`;
-  const rows = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
+  const rows = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(k === 'phone' ? toSaudiWhatsApp(s[k]) : (s[k]||''))}</td>`).join('')}</tr>`).join('');
 
   return `<html dir="rtl"><head><meta charset="utf-8"><title>${escapeHtml(opts.title||'كشف الطلاب')}</title>
   <style>
@@ -1351,7 +1342,7 @@ function exportFilteredExcel(){
   const data=getFiltered(); if(!data.length){notify('لا توجد بيانات لتصديرها.');return}
   const {order, labels} = getSelectedColumns();
   if(!order.length){notify('يرجى تحديد عمود واحد على الأقل للتصدير من الإعدادات!');return}
-  const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = s[k] || ''; }); return obj; });
+  const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = k === 'phone' ? toSaudiWhatsApp(s[k]) : (s[k] || ''); }); return obj; });
   const ws = XLSX.utils.json_to_sheet(rows);
   const t=todayInfo();
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'الطلاب');
@@ -1359,7 +1350,7 @@ function exportFilteredExcel(){
 }
 document.getElementById('exportExcelBtn').addEventListener('click',exportFilteredExcel);
 
-/* ===== ✅ دالة طباعة كشف المتابعة (مع حساب تلقائي لارتفاع الصف لملء A4) ===== */
+/* ===== ✅ دالة طباعة كشف المتابعة ===== */
 function printFilteredGradeReport() {
     let data = getFiltered();
     if (!data.length) data = students;
@@ -1383,17 +1374,12 @@ function printFilteredGradeReport() {
       period: escapeHtml($('#col_period')?.value || "فترة")
     };
 
-    // 🔤 حجم الخط بالـ pt (وحدة طباعة فعلية)
     const userFontSize = parseInt($('#print_font_size')?.value) || 12;
-    // نحوّل من px إلى pt تقريبياً (1px ≈ 0.75pt)
     const fontSizePt = Math.max(8, Math.min(14, Math.round(userFontSize * 0.75)));
 
     const boxCount = parseInt($('#box_count')?.value) || 10;
     const userRowHeightMm = Math.max(5, (parseInt($('#row_height')?.value) || 18) / 4);
 
-    // ✅ حساب ارتفاع الصف بالـ mm لملء صفحة A4 كاملة حسب عدد الطلاب
-    // A4: 297mm ارتفاع، هوامش 5mm أعلى وأسفل = 287mm صافي
-    // نطرح ترويسة (~28mm) + رأس الجدول (~7mm) + ترقيم الصفحة (~5mm) = ~40mm
     const AVAILABLE_MM = 247;
     const totalStudents = Math.max(data.length, 1);
     const autoRowHeightMm = Math.max(
@@ -1553,15 +1539,7 @@ function openSettings(){
 
 function closeSettings(){ 
   $('#settingsPanel').classList.remove('open'); 
-  $('#settingsOverlay').style.display='none';
-}
-
-function toggleAcc(id){ 
-  const targetAcc = document.getElementById(id);
-  if(!targetAcc) return;
-  
-  const isOpen = targetAcc.classList.contains('open');
-  $$('.accordion').forEach(acc => acc.classList.remove('open'));
+  $('#settingsOverlay').style.display='none'; }  function toggleAcc(id){    const targetAcc = document.getElementById(id);   if(!targetAcc) return;      const isOpen = targetAcc.classList.contains('open');   $$('.accordion').forEach(acc => acc.classList.remove('open'));
   
   if(!isOpen) {
     targetAcc.classList.add('open');
@@ -1588,12 +1566,11 @@ $('#loginPass')?.addEventListener('keydown', e=>{ if(e.key==='Enter') submitLogi
 async function init(){
   checkAndFixOldCredentials();
   loadHeaderData();
-  await loadLogo(); // جلب تلقائي لشعار student.png
+  await loadLogo();
   loadPE();
   updateLogoPreview();
   applyMessageTemplate();
 
-  // ⚡ جلب ملف StudentGuidance.xls تلقائياً
   await loadDefaultExcelFile();
 
   refreshFiltersOptions();
