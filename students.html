@@ -887,8 +887,7 @@ function render(){
     tr.innerHTML=`
 ${checkCell}
 <td>${nameHtml}</td>
-<td class="mono">${escapeHtml(s.phone||'')}</td>
-<td class="mono">${escapeHtml(s.id||'')}</td>
+<td class="mono">${s.phone ? '+' + escapeHtml(s.phone) : ''}</td><td class="mono">${escapeHtml(s.id||'')}</td>
 <td>${escapeHtml(s.grade||'')}</td>
 <td>${escapeHtml(s.class||'')}</td>
 <td>
