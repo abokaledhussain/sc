@@ -875,6 +875,7 @@ function render(){
     const checked=selectedUids.has(s.uid)?'checked':'';
     let nameHtml=`<div class="row-meta"><b>${escapeHtml(s.name||'')}</b></div>`;
     const waUrl=waLink(s.phone,`السلام عليكم ولي أمر ${s.name??''}`);
+const phoneDisplay = s.phone ? toSaudiWhatsApp(s.phone) : '';
     
     const adminBtns = isAdmin ? `
       <button class="btn stats-btn" style="padding:6px 9px" data-act="stats" data-uid="${s.uid}" title="إحصائيات ومتابعة" aria-label="متابعة ${escapeHtml(s.name||'')}">📊</button>
@@ -892,7 +893,7 @@ ${checkCell}
 <td>${escapeHtml(s.class||'')}</td>
 <td>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
-    <a class="btn" style="padding:6px 9px" href="tel:${encodeURIComponent(s.phone||'')}" title="اتصال" aria-label="اتصال بـ ${escapeHtml(s.name||'')}">📞</a>
+    <<a class="btn" style="padding:6px 9px" href="tel:${encodeURIComponent(phoneDisplay)}" ...>📞</a>
     <a class="icon-btn" title="واتساب" aria-label="واتساب ولي أمر ${escapeHtml(s.name||'')}" href="${waUrl}" target="_blank" rel="noopener">🟢</a>
     ${adminBtns}
   </div>
@@ -1258,7 +1259,7 @@ function buildRosterPrintHtml(data, opts){
 
   const headerHTML = buildOfficialHeaderHTML();
   const thCols = `<tr><th>الرقم</th>${order.map(k=>`<th>${escapeHtml(labels[k])}</th>`).join('')}</tr>`;
-  const rows = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
+  const rows = data.map((s,i)=>`<tr><td>${i+1}</td>${order.map(k=>`<td>${k==='phone' && s[k] ? '+' + escapeHtml(s[k]) : escapeHtml(s[k]||'')}</td>`).join('')}</tr>`).join('');
 
   return `<html dir="rtl"><head><meta charset="utf-8"><title>${escapeHtml(opts.title||'كشف الطلاب')}</title>
   <style>
@@ -1342,7 +1343,7 @@ function exportFilteredExcel(){
   const data=getFiltered(); if(!data.length){notify('لا توجد بيانات لتصديرها.');return}
   const {order, labels} = getSelectedColumns();
   if(!order.length){notify('يرجى تحديد عمود واحد على الأقل للتصدير من الإعدادات!');return}
-  const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = s[k] || ''; }); return obj; });
+const rows = data.map((s,i)=>{ const obj={'الرقم': i+1}; order.forEach(k=>{ obj[labels[k]] = (k==='phone' && s[k]) ? '+' + s[k] : (s[k] || ''); }); return obj; });
   const ws = XLSX.utils.json_to_sheet(rows);
   const t=todayInfo();
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'الطلاب');
